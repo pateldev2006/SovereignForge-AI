@@ -85,7 +85,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentUser, setCurrentUser] = useState<User>(() => {
     const saved = localStorage.getItem('sf_user');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { /* ignore */ }
+      try {
+        const parsed = JSON.parse(saved);
+        // Validate the saved user has a role that matches our current DEMO_USERS
+        const validRoles = DEMO_USERS.map(u => u.role);
+        if (parsed && parsed.role && validRoles.includes(parsed.role)) {
+          // Use the matching DEMO_USER to ensure shape compatibility
+          const matchedUser = DEMO_USERS.find(u => u.role === parsed.role);
+          if (matchedUser) return matchedUser;
+        }
+        // Invalid data from old prototype — clear it
+        localStorage.removeItem('sf_user');
+      } catch (e) {
+        localStorage.removeItem('sf_user');
+      }
     }
     return DEMO_USERS[0]; // Plant Engineer by default
   });
