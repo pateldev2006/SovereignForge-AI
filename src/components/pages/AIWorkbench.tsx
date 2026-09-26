@@ -8,7 +8,8 @@ import {
   Activity, Zap, Compass, Flame, CheckSquare, MessageSquare, User, Paperclip, 
   CornerDownLeft, X, Mic, MicOff, Camera, FolderOpen, Database, Sliders,
   ThumbsUp, ThumbsDown, Flag, Edit3, SplitSquareVertical, FileCode2,
-  Presentation, Pause, Square, AlertCircle, HelpCircle, HardDrive
+  Presentation, Pause, Square, AlertCircle, HelpCircle, HardDrive,
+  PanelRightClose, PanelRightOpen, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { downloadApprovalNotePDF } from '../../utils/exportUtils';
 
@@ -193,6 +194,7 @@ export const AIWorkbench: React.FC = () => {
   const isInitialMount = useRef(true);
 
   // Right Column View States
+  const [isDeliverableStudioOpen, setIsDeliverableStudioOpen] = useState<boolean>(true);
   const [deliverableFormatTab, setDeliverableFormatTab] = useState<'docx' | 'xlsx' | 'pptx' | 'pdf' | 'code' | 'diff'>('docx');
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [editableDraft, setEditableDraft] = useState<string>(
@@ -468,13 +470,13 @@ export const AIWorkbench: React.FC = () => {
         </div>
 
         {/* ────────────────────────────────────────────────────────────────
-            COLUMN 2: CENTER PANEL — Composer, Conversational Chat & Live Agent Trace (5 Cols)
+            COLUMN 2: CENTER PANEL — Composer, Conversational Chat & Live Agent Trace
            ──────────────────────────────────────────────────────────────── */}
         <div 
           onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
           onDragLeave={() => setIsDragOver(false)}
           onDrop={handleDrop}
-          className={`xl:col-span-5 bg-white border-r border-slate-200/90 flex flex-col justify-between overflow-y-auto max-h-[calc(100vh-105px)] relative transition-all ${
+          className={`${isDeliverableStudioOpen ? 'xl:col-span-5' : 'xl:col-span-9'} bg-white border-r border-slate-200/90 flex flex-col justify-between overflow-y-auto max-h-[calc(100vh-105px)] relative transition-all duration-200 ${
             isDragOver ? 'ring-4 ring-blue-500/30 bg-blue-50/20' : ''
           }`}
         >
@@ -512,16 +514,40 @@ export const AIWorkbench: React.FC = () => {
               </div>
             </div>
 
-            {/* Clear Chat */}
-            <button
-              onClick={() => {
-                setChatMessages([INITIAL_CHAT_MESSAGES[0]]);
-                showToast('Chat Cleared', 'Conversation history reset. Audit provenance retained.', 'info');
-              }}
-              className="text-[10px] font-bold text-slate-500 hover:text-slate-800 px-2 py-1 rounded-lg hover:bg-slate-200/60 transition-colors"
-            >
-              Clear
-            </button>
+            {/* Action Buttons: Clear Chat & Studio Toggle */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setChatMessages([INITIAL_CHAT_MESSAGES[0]]);
+                  showToast('Chat Cleared', 'Conversation history reset. Audit provenance retained.', 'info');
+                }}
+                className="text-[10px] font-bold text-slate-500 hover:text-slate-800 px-2 py-1 rounded-lg hover:bg-slate-200/60 transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+
+              <button
+                onClick={() => setIsDeliverableStudioOpen(!isDeliverableStudioOpen)}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
+                  isDeliverableStudioOpen 
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm'
+                }`}
+                title={isDeliverableStudioOpen ? 'Retract Live Deliverable Studio' : 'Open Live Deliverable Studio'}
+              >
+                {isDeliverableStudioOpen ? (
+                  <>
+                    <PanelRightClose className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Retract Studio ❯</span>
+                  </>
+                ) : (
+                  <>
+                    <PanelRightOpen className="w-3.5 h-3.5 text-white" />
+                    <span>❮ Open Studio (Draft Ready)</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Conversational Chat Messages Area */}
@@ -813,31 +839,40 @@ export const AIWorkbench: React.FC = () => {
         </div>
 
         {/* ────────────────────────────────────────────────────────────────
-            COLUMN 3: RIGHT PANEL — Deliverable Studio, Provenance & Export (4 Cols)
+            COLUMN 3: RIGHT PANEL — Deliverable Studio, Provenance & Export (Retractable)
            ──────────────────────────────────────────────────────────────── */}
-        <div className="xl:col-span-4 bg-white flex flex-col justify-between overflow-y-auto max-h-[calc(100vh-105px)] p-4 space-y-4">
-          
-          {/* Header with Format Selector Tabs */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-                <FileCheck className="w-4 h-4 text-blue-600" />
-                Live Deliverable Studio
-              </h3>
-              
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setIsInlineEditing(!isInlineEditing)}
-                  className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors flex items-center gap-1 ${
-                    isInlineEditing ? 'bg-amber-100 border-amber-300 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                  }`}
-                  title="Toggle Inline Direct Editor"
-                >
-                  <Edit3 className="w-3 h-3" />
-                  <span>{isInlineEditing ? 'Editing Mode' : 'Edit Draft'}</span>
-                </button>
+        {isDeliverableStudioOpen && (
+          <div className="xl:col-span-4 bg-white flex flex-col justify-between overflow-y-auto max-h-[calc(100vh-105px)] p-4 space-y-4 animate-in slide-in-from-right duration-150">
+            
+            {/* Header with Format Selector Tabs */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                  <FileCheck className="w-4 h-4 text-blue-600" />
+                  Live Deliverable Studio
+                </h3>
+                
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setIsInlineEditing(!isInlineEditing)}
+                    className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors flex items-center gap-1 cursor-pointer ${
+                      isInlineEditing ? 'bg-amber-100 border-amber-300 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                    title="Toggle Inline Direct Editor"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    <span>{isInlineEditing ? 'Editing Mode' : 'Edit Draft'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setIsDeliverableStudioOpen(false)}
+                    className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                    title="Retract Studio Panel"
+                  >
+                    <PanelRightClose className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
 
             {/* Output Format Tabs per Spec */}
             <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
@@ -1078,8 +1113,23 @@ print(f"Verified Execution: {result}")
           </div>
 
         </div>
+        )}
 
       </div>
+
+      {/* Floating Retracted Edge Tab Handle */}
+      {!isDeliverableStudioOpen && (
+        <button
+          onClick={() => setIsDeliverableStudioOpen(true)}
+          className="fixed right-0 top-1/2 -translate-y-1/2 z-30 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3.5 px-2 rounded-l-xl shadow-xl border-l border-y border-blue-400 flex flex-col items-center gap-2 cursor-pointer transition-all hover:pr-3 animate-in fade-in duration-150"
+          title="Open Live Deliverable Studio"
+        >
+          <ChevronLeft className="w-4 h-4 animate-pulse" />
+          <span className="[writing-mode:vertical-rl] tracking-wider text-[10px] uppercase font-mono font-bold">
+            Live Deliverable Studio
+          </span>
+        </button>
+      )}
 
       {/* ────────────────────────────────────────────────────────────────
           PERSISTENT INDUSTRIAL STATUS STRIP (BOTTOM BAR PER SPEC)
