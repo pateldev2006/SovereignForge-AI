@@ -1,13 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { 
   Bot, Play, UploadCloud, CheckCircle2, AlertTriangle, 
   ArrowRight, ShieldCheck, Cpu, RefreshCw, ExternalLink, 
   Clock, Sparkles, Check, ChevronDown, ChevronUp, Download, Send, 
   Layers, Eye, FileCheck, FileText, FileSpreadsheet, Image as ImageIcon,
-  Activity, Zap, Compass, Flame, CheckSquare
+  Activity, Zap, Compass, Flame, CheckSquare, MessageSquare, User, Paperclip, CornerDownLeft
 } from 'lucide-react';
 import { downloadApprovalNotePDF } from '../../utils/exportUtils';
+
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: Date;
+  citations?: string[];
+  isTyping?: boolean;
+}
+
+// Pre-seeded demo conversation to show the chat is active
+const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
+  {
+    id: 'sys-1',
+    role: 'system',
+    content: 'Secure session initiated. All queries processed locally on MRPL air-gapped infrastructure. Zero data egress.',
+    timestamp: new Date(Date.now() - 1200000),
+  },
+  {
+    id: 'usr-1',
+    role: 'user',
+    content: 'What is the remaining wall thickness of Heat Exchanger HX-204 shell side according to the latest inspection report?',
+    timestamp: new Date(Date.now() - 1100000),
+  },
+  {
+    id: 'ast-1',
+    role: 'assistant',
+    content: 'Based on the NDT Inspection Report (Doc ID: MRPL/INSP/2026/HX-204-Q3, dated 15-Jun-2026), the measured wall thickness of HX-204 shell side is **8.2 mm** at the thinnest point (Location: Nozzle N2 vicinity, Grid Reference C4).\n\nThe original design thickness per ASME Section VIII Div.1 is **12.5 mm**, and the minimum retirement thickness per SOP-4.2.1 Rev 4 is **7.8 mm**.\n\n📊 **Corrosion rate:** 0.28 mm/year (calculated from 2019 baseline)\n📅 **Estimated remaining life:** ~1.4 years before retirement threshold\n\n⚠️ This is within the SOP-mandated "Enhanced Monitoring Zone" (< 2mm above retirement). SOP-4.2.1 §6.3 requires inspection frequency to be increased to quarterly.',
+    timestamp: new Date(Date.now() - 1050000),
+    citations: ['SOP-4.2.1 §6.3', 'MRPL/INSP/2026/HX-204-Q3'],
+  },
+  {
+    id: 'usr-2',
+    role: 'user',
+    content: 'Does this mean we need to schedule an early turnaround for HX-204?',
+    timestamp: new Date(Date.now() - 900000),
+  },
+  {
+    id: 'ast-2',
+    role: 'assistant',
+    content: 'Based on the current corrosion rate and SOP guidelines, here is the assessment:\n\n**Immediate turnaround is NOT required**, but early planning is recommended:\n\n1. **Current status:** Wall thickness (8.2mm) is above the retirement limit (7.8mm) with ~1.4 years margin\n2. **SOP-4.2.1 §7.1** states turnaround must be scheduled when remaining life falls below 12 months — you have ~2 months of buffer\n3. **Recommendation:** Schedule turnaround for Q1 2027 (6 months ahead of the normal 5-year cycle)\n\n**Required actions per SOP:**\n- ✅ Increase inspection to quarterly (next due: Sep 2026)\n- ✅ Issue Engineering Change Notice (ECN) for revised turnaround schedule\n- ✅ Notify Approving Authority for budget pre-approval\n\nWould you like me to draft the Turnaround Advance Planning Note for management approval?',
+    timestamp: new Date(Date.now() - 850000),
+    citations: ['SOP-4.2.1 §7.1', 'SOP-4.2.1 §6.3', 'MRPL Turnaround Policy Rev 3'],
+  },
+];
+
+// Simulated AI response bank for follow-up questions
+const AI_RESPONSE_BANK: { keywords: string[]; response: string; citations: string[] }[] = [
+  {
+    keywords: ['turnaround', 'plan', 'draft', 'planning note'],
+    response: 'I\'ve drafted the Turnaround Advance Planning Note (Ref: MRPL/MECH/2026/TA-HX204-ADV).\n\n**Key contents:**\n- Equipment: HX-204 Shell & Tube Heat Exchanger\n- Proposed date: Q1 2027 (Jan-Mar window)\n- Estimated duration: 14 days\n- Budget estimate: ₹2.8 Cr (tube bundle replacement + shell weld overlay)\n- Critical path: Tube bundle procurement (12-week lead time)\n\nThe note has been formatted per MRPL Technical Services template and is ready for your review before submission to the Approving Authority queue.\n\nWould you like me to send it to Dr. Vikram Shetty\'s approval queue?',
+    citations: ['MRPL Turnaround Policy Rev 3', 'MRPL/PROC/Budget-2026'],
+  },
+  {
+    keywords: ['SOP', 'standard', 'procedure', 'compliance'],
+    response: 'Here are the relevant SOPs for your current context:\n\n1. **SOP-4.2.1** (Static Equipment Inspection & Maintenance) — Rev 4, 120 pages\n   - §6.3: Enhanced monitoring criteria\n   - §7.1: Turnaround scheduling thresholds\n   - §8.2: NDT methodology requirements\n\n2. **SOP-3.1.7** (Corrosion Management Program) — Rev 6\n   - §4.1: Corrosion rate calculation methodology\n   - §5.2: Risk-based inspection intervals\n\n3. **OISD-STD-129** (Inspection of Static Equipment)\n   - Clause 7: Minimum thickness criteria\n\nAll SOPs are indexed in the local vector store. Click any reference to view the exact source passage.',
+    citations: ['SOP-4.2.1 Rev 4', 'SOP-3.1.7 Rev 6', 'OISD-STD-129'],
+  },
+  {
+    keywords: ['corrosion', 'rate', 'thickness', 'measurement'],
+    response: 'The corrosion rate analysis for HX-204 based on historical NDT data:\n\n📊 **Corrosion Rate Trend:**\n| Year | Thickness (mm) | Rate (mm/yr) |\n|------|---------------|-------------|\n| 2019 | 10.3 | — (baseline) |\n| 2021 | 9.7 | 0.30 |\n| 2023 | 9.1 | 0.30 |\n| 2025 | 8.5 | 0.30 |\n| 2026 | 8.2 | 0.28 |\n\nThe rate has slightly decreased (0.28 mm/yr vs historical 0.30 mm/yr), possibly due to the inhibitor dosing change in 2024. However, SOP-4.2.1 §6.1 mandates using the **worst-case historical rate** (0.30 mm/yr) for remaining life calculations.\n\n**At 0.30 mm/yr:** Retirement threshold (7.8mm) reached in ~1.33 years (Feb 2028)\n**At 0.28 mm/yr:** Retirement threshold reached in ~1.43 years (Mar 2028)',
+    citations: ['NDT Historical Database', 'SOP-4.2.1 §6.1'],
+  },
+  {
+    keywords: ['approve', 'approval', 'send', 'submit', 'queue'],
+    response: 'I\'ve prepared the submission package for the Approving Authority queue:\n\n📋 **Approval Package Contents:**\n1. Technical Approval Note (MRPL/MECH/2026/HX-204-APPR)\n2. NDT Inspection Report Summary\n3. SOP Deviation Analysis (6-month overhaul variance)\n4. Cost estimate and turnaround schedule\n5. Risk assessment matrix\n\n**Routing:** → Dr. Vikram Shetty (VP Technical) → Budget Committee\n**Priority:** HIGH (equipment integrity concern)\n**Digital signature:** Required (RSA-2048 + employee smart card)\n\nThe package is ready in the Approval Queue. The Approving Authority will receive a notification on their dashboard.\n\n✅ All provenance chains are intact — every claim traces back to source documents.',
+    citations: ['MRPL/MECH/2026/HX-204-APPR', 'Approval Workflow SOP-9.1'],
+  },
+];
+
+const DEFAULT_AI_RESPONSE = {
+  response: 'I\'ve processed your query against the local document store and SOP knowledge base. Based on the indexed materials for CDU/VDU Unit 03 and Heat Exchanger HX-204:\n\nThe information you\'re looking for requires cross-referencing multiple source documents. I\'ve identified 3 relevant passages from the ingested inspection reports and 2 SOP sections that address this topic.\n\nWould you like me to:\n1. Show the detailed source excerpts with provenance links?\n2. Generate a formal summary note for the record?\n3. Flag any SOP deviations related to your query?',
+  citations: ['Local Vector Store', 'SOP Knowledge Base'],
+};
 
 export const AIWorkbench: React.FC = () => {
   const { 
@@ -34,6 +108,57 @@ export const AIWorkbench: React.FC = () => {
   ]);
   const [isTraceExpanded, setIsTraceExpanded] = useState<boolean>(true);
   const [isRAGExpanded, setIsRAGExpanded] = useState<boolean>(true);
+
+  // Chat state
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(INITIAL_CHAT_MESSAGES);
+  const [chatInput, setChatInput] = useState<string>('');
+  const [isChatTyping, setIsChatTyping] = useState<boolean>(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-scroll chat to bottom when new messages arrive
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, isChatTyping]);
+
+  // Send a chat message handler
+  const handleSendChat = () => {
+    const trimmed = chatInput.trim();
+    if (!trimmed || isChatTyping) return;
+
+    // Add user message
+    const userMsg: ChatMessage = {
+      id: `usr-${Date.now()}`,
+      role: 'user',
+      content: trimmed,
+      timestamp: new Date(),
+    };
+    setChatMessages(prev => [...prev, userMsg]);
+    setChatInput('');
+    setIsChatTyping(true);
+
+    // Simulate AI thinking + response (1.5-3s delay)
+    const delay = 1500 + Math.random() * 1500;
+    setTimeout(() => {
+      // Find matching response from response bank
+      const lowerInput = trimmed.toLowerCase();
+      const matched = AI_RESPONSE_BANK.find(r =>
+        r.keywords.some(kw => lowerInput.includes(kw.toLowerCase()))
+      );
+
+      const responseData = matched || DEFAULT_AI_RESPONSE;
+
+      const aiMsg: ChatMessage = {
+        id: `ast-${Date.now()}`,
+        role: 'assistant',
+        content: responseData.response,
+        timestamp: new Date(),
+        citations: responseData.citations,
+      };
+      setChatMessages(prev => [...prev, aiMsg]);
+      setIsChatTyping(false);
+    }, delay);
+  };
 
   // Quick Preset Handlers
   const handleSelectPreset = (presetText: string, files: string[]) => {
@@ -479,6 +604,191 @@ export const AIWorkbench: React.FC = () => {
 
         </div>
 
+      </div>
+
+      {/* ═══ CONVERSATIONAL AI CHAT PANEL ═══ */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-card overflow-hidden flex flex-col" style={{ height: '520px' }}>
+        
+        {/* Chat Header */}
+        <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
+              <MessageSquare className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-bold text-slate-900 text-sm tracking-tight">Ask SovereignForge AI</h2>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-green"></span>
+                  LIVE
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-0.5">
+                Ask follow-up questions, request analysis, or explore your documents — all processed locally
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-slate-400 font-mono">{chatMessages.length} messages</span>
+            <button 
+              onClick={() => { setChatMessages([INITIAL_CHAT_MESSAGES[0]]); showToast('Chat Cleared', 'Conversation history cleared. Session provenance retained in audit log.', 'info'); }}
+              className="text-[10px] font-bold text-slate-500 hover:text-slate-700 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              Clear Chat
+            </button>
+          </div>
+        </div>
+
+        {/* Chat Messages Area (Scrollable) */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-[#FAFBFC]">
+          
+          {chatMessages.map((msg) => (
+            <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              
+              {/* AI / System Avatar */}
+              {msg.role !== 'user' && (
+                <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center text-white ${
+                  msg.role === 'system' ? 'bg-slate-500' : 'bg-blue-600'
+                }`}>
+                  {msg.role === 'system' ? <ShieldCheck className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+                </div>
+              )}
+
+              {/* Message Bubble */}
+              <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-blue-600 text-white rounded-br-md'
+                  : msg.role === 'system'
+                  ? 'bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-mono italic'
+                  : 'bg-white text-slate-800 border border-slate-200 shadow-xs rounded-bl-md'
+              }`}>
+                {/* Render content with basic markdown-like formatting */}
+                {msg.content.split('\n').map((line, i) => {
+                  // Bold text
+                  const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                  return (
+                    <p 
+                      key={i} 
+                      className={`${i > 0 ? 'mt-1.5' : ''} ${line === '' ? 'mt-2' : ''}`}
+                      dangerouslySetInnerHTML={{ __html: formatted }}
+                    />
+                  );
+                })}
+                
+                {/* Citation badges for AI messages */}
+                {msg.citations && msg.citations.length > 0 && (
+                  <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap gap-1.5">
+                    {msg.citations.map((cite, i) => (
+                      <button
+                        key={i}
+                        onClick={() => openSourceViewer(i)}
+                        className="citation-badge"
+                      >
+                        [{i + 1}] {cite}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Timestamp */}
+                <div className={`mt-1.5 text-[9px] font-mono ${
+                  msg.role === 'user' ? 'text-blue-200' : 'text-slate-400'
+                }`}>
+                  {msg.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                  {msg.role === 'assistant' && ' • Processed on local GPU'}
+                </div>
+              </div>
+
+              {/* User Avatar */}
+              {msg.role === 'user' && (
+                <div className="w-7 h-7 rounded-lg flex-shrink-0 bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold">
+                  {currentUser.avatar || 'U'}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Typing Indicator */}
+          {isChatTyping && (
+            <div className="flex gap-3 justify-start">
+              <div className="w-7 h-7 rounded-lg flex-shrink-0 bg-blue-600 text-white flex items-center justify-center">
+                <Bot className="w-3.5 h-3.5" />
+              </div>
+              <div className="bg-white border border-slate-200 shadow-xs rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                <span className="text-[10px] text-slate-400 ml-2 font-mono">Querying local knowledge base...</span>
+              </div>
+            </div>
+          )}
+
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Chat Input Bar */}
+        <div className="flex-shrink-0 border-t border-slate-200 bg-white p-3.5">
+          <div className="flex items-end gap-2.5">
+            
+            {/* Attachment Button */}
+            <button className="w-9 h-9 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors flex-shrink-0">
+              <Paperclip className="w-4 h-4" />
+            </button>
+
+            {/* Text Input */}
+            <div className="flex-1 relative">
+              <textarea
+                ref={chatInputRef}
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendChat();
+                  }
+                }}
+                placeholder="Ask a follow-up question about your documents, SOPs, or equipment..."
+                rows={1}
+                className="w-full rounded-xl border border-slate-300 bg-slate-50/50 px-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all font-medium resize-none pr-10"
+              />
+              <div className="absolute right-2.5 bottom-2 text-[9px] text-slate-400 font-mono flex items-center gap-1">
+                <CornerDownLeft className="w-3 h-3" /> Enter
+              </div>
+            </div>
+
+            {/* Send Button */}
+            <button
+              onClick={handleSendChat}
+              disabled={!chatInput.trim() || isChatTyping}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
+                chatInput.trim() && !isChatTyping
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              }`}
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+          
+          {/* Quick Action Chips */}
+          <div className="flex items-center gap-2 mt-2.5 overflow-x-auto">
+            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex-shrink-0">Quick:</span>
+            {[
+              'What SOPs apply to HX-204?',
+              'Show corrosion rate trend',
+              'Draft turnaround plan',
+              'Send to approval queue',
+            ].map((q, i) => (
+              <button
+                key={i}
+                onClick={() => { setChatInput(q); setTimeout(() => chatInputRef.current?.focus(), 50); }}
+                className="flex-shrink-0 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[10px] font-semibold text-slate-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all whitespace-nowrap"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* 3. AGENT EXECUTION TRACE ACCORDION */}
