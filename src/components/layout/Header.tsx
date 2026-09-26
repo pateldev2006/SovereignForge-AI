@@ -15,7 +15,8 @@ export const Header: React.FC<{ onToggleMobileMenu?: () => void }> = ({ onToggle
     setSystemMode, 
     setIsSovereigntyModalOpen,
     startDemoTour,
-    activePage
+    activePage,
+    users
   } = useApp();
 
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
@@ -225,14 +226,14 @@ export const Header: React.FC<{ onToggleMobileMenu?: () => void }> = ({ onToggle
                   <p className="text-xs text-slate-500 mt-0.5">Switch role to observe dynamic UI & RBAC adaptation</p>
                 </div>
 
-                <div className="py-2 space-y-1">
-                  {DEMO_USERS.map((user) => {
-                    const isSelected = currentUser.role === user.role;
+                <div className="py-2 space-y-1 max-h-[380px] overflow-y-auto">
+                  {users.map((user) => {
+                    const isSelected = currentUser.id === user.id;
                     return (
                       <button
                         key={user.id}
                         onClick={() => {
-                          switchUser(user.role);
+                          switchUser(user.id);
                           setIsRoleDropdownOpen(false);
                         }}
                         className={`w-full text-left p-2.5 rounded-xl flex items-start gap-3 transition-colors ${

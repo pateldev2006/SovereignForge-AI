@@ -5,7 +5,7 @@ import { UserRole } from '../../types';
 import { ShieldCheck, Lock, ArrowRight, UserCheck, Key, Sparkles, Building2, CheckCircle2 } from 'lucide-react';
 
 export const Login: React.FC = () => {
-  const { switchUser, navigateTo, showToast } = useApp();
+  const { switchUser, navigateTo, showToast, users } = useApp();
   const [employeeIdInput, setEmployeeIdInput] = useState('MRPL-ENG-10482');
   const [passwordInput, setPasswordInput] = useState('••••••••••••');
   const [useSmartCard, setUseSmartCard] = useState(false);
@@ -18,8 +18,8 @@ export const Login: React.FC = () => {
     showToast('Authenticated Successfully', 'Connected to air-gapped MRPL SovereignForge instance.', 'success');
   };
 
-  const handleQuickRoleLogin = (role: UserRole) => {
-    switchUser(role);
+  const handleQuickRoleLogin = (userIdOrRole: string, role: UserRole) => {
+    switchUser(userIdOrRole);
     if (role === 'Approver') navigateTo('approvals');
     else if (role === 'CISO') navigateTo('admin-security');
     else if (role === 'ITEngineer') navigateTo('code-sandbox');
@@ -135,16 +135,16 @@ export const Login: React.FC = () => {
             </p>
           </div>
 
-          <div className="space-y-2">
-            {DEMO_USERS.map((user) => (
+          <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+            {users.map((user) => (
               <button
                 key={user.id}
-                onClick={() => handleQuickRoleLogin(user.role)}
+                onClick={() => handleQuickRoleLogin(user.id, user.role)}
                 className="w-full text-left p-3.5 bg-white hover:bg-blue-50/80 rounded-xl border border-slate-200 hover:border-blue-300 shadow-2xs transition-all flex items-center justify-between group"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                    {user.avatar}
+                    {user.avatar || user.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div>
                     <h4 className="font-bold text-xs text-slate-900 group-hover:text-blue-900">{user.name}</h4>

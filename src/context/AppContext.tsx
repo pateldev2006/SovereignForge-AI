@@ -21,7 +21,7 @@ interface AppContextType {
   activePage: PageId;
   systemMode: SystemStatusMode;
   setSystemMode: (mode: SystemStatusMode) => void;
-  switchUser: (role: UserRole) => void;
+  switchUser: (roleOrId: UserRole | string) => void;
   navigateTo: (page: PageId) => void;
   hasPermission: (moduleKey: string, action?: 'view' | 'create' | 'edit' | 'delete' | 'approve' | 'export' | 'admin') => boolean;
   hasFieldAccess: (fieldName: string) => boolean;
@@ -76,11 +76,28 @@ interface AppContextType {
   toast: { title: string; desc: string; type: 'success' | 'error' | 'warning' | 'info' } | null;
   showToast: (title: string, desc: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
   clearToast: () => void;
+
+  // User Management & Directory (Admin / CISO only)
+  users: User[];
+  addUser: (newUser: Omit<User, 'id'>) => { success: boolean; message: string };
+  deleteUser: (userId: string) => { success: boolean; message: string };
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // User directory with localStorage persistence
+  const [users, setUsers] = useState<User[]>(() => {
+    const saved = localStorage.getItem('sf_users_list');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) { /* ignore */ }
+    }
+    return DEMO_USERS;
+  });
+
   // 1. Current user initialized to Plant / Process Engineer (Rajesh Kumar)
   const [currentUser, setCurrentUser] = useState<User>(() => {
     const saved = localStorage.getItem('sf_user');
@@ -204,8 +221,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Switch User Role helper
-  const switchUser = (role: UserRole) => {
-    const targetUser = DEMO_USERS.find(u => u.role === role) || DEMO_USERS[0];
+  const switchUser = (role: UserRole | string) => {
+    const targetUser = users.find(u => u.role === role || u.id === role) || DEMO_USERS.find(u => u.role === role) || DEMO_USERS[0];
     setCurrentUser(targetUser);
 
     // If current page is unauthorized for new role, redirect gracefully
@@ -560,6 +577,108 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Model Integrity Verified', `Cryptographic weight checksum matches MRPL Root Certificate.`, 'success');
   };
 
+  // ═══ ADMIN USER PROVISIONING & DEPROVISIONING (CISO ONLY) ═══
+  const addUser = (newUser: Omit<User, 'id'>) => {
+    // STRICT SECURITY CHECK: Only CISO / Security Admin can provision new users
+    if (currentUser.role !== 'CISO') {
+      showToast(
+        'Access Denied: Admin Clearance Required',
+        `Permission denied. Only CISO (Security Administrator) can provision new user accounts. Current role: ${currentUser.roleTitle}.`,
+        'error'
+      );
+      return { success: false, message: 'Permission denied. Only CISO / Admin can provision accounts.' };
+    }
+
+    const id = `usr-prov-${Date.now().toString(36)}`;
+    const initials = newUser.name
+      .split(' ')
+      .filter(Boolean)
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+
+    const createdUser: User = {
+      ...newUser,
+      id,
+      activeSession: true,
+      avatar: newUser.avatar || initials || 'MR'
+    };
+
+    const updated = [...users, createdUser];
+    setUsers(updated);
+    try { localStorage.setItem('sf_users_list', JSON.stringify(updated)); } catch (e) {}
+
+    // Add immutable Forensic Audit Log
+    const newLog: AuditEvent = {
+      id: `aud-${Date.now()}`,
+      auditId: `SF-AUD-2026-${Math.floor(10000 + Math.random() * 90000)}`,
+      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      user: `${currentUser.name} (CISO)`,
+      role: 'CISO',
+      action: 'USER_PROVISIONED',
+      resource: `Employee Account: ${createdUser.employeeId}`,
+      agent: 'SovereignForge Identity Controller',
+      result: 'SUCCESS',
+      risk: 'Medium',
+      hashSignature: `0x${Math.floor(Math.random() * 0xFFFFFFFFFF).toString(16).toUpperCase()}`,
+      details: `Provisioned new account for ${createdUser.name} (${createdUser.roleTitle}, ${createdUser.department}) with clearance ${createdUser.clearanceLevel}.`,
+      clientIp: '10.14.88.10 (On-Prem SOC Console)'
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+
+    showToast(
+      'User Provisioned Successfully',
+      `Provisioned ${createdUser.name} (${createdUser.roleTitle}) with clearance ${createdUser.clearanceLevel}.`,
+      'success'
+    );
+
+    return { success: true, message: 'User provisioned successfully.' };
+  };
+
+  const deleteUser = (userId: string) => {
+    if (currentUser.role !== 'CISO') {
+      showToast(
+        'Access Denied',
+        'Permission denied. Only CISO / Security Administrator can revoke user accounts.',
+        'error'
+      );
+      return { success: false, message: 'Only CISO/Admin can delete users.' };
+    }
+
+    const isCoreRole = DEMO_USERS.some(u => u.id === userId);
+    if (isCoreRole) {
+      showToast('Protected Core Role', 'Default system demo accounts cannot be deleted.', 'warning');
+      return { success: false, message: 'Core demo accounts cannot be deleted.' };
+    }
+
+    const targetUser = users.find(u => u.id === userId);
+    const updated = users.filter(u => u.id !== userId);
+    setUsers(updated);
+    try { localStorage.setItem('sf_users_list', JSON.stringify(updated)); } catch (e) {}
+
+    // Forensic audit event
+    const newLog: AuditEvent = {
+      id: `aud-${Date.now()}`,
+      auditId: `SF-AUD-2026-${Math.floor(10000 + Math.random() * 90000)}`,
+      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      user: `${currentUser.name} (CISO)`,
+      role: 'CISO',
+      action: 'USER_DEPROVISIONED',
+      resource: `Employee Account: ${targetUser?.employeeId || userId}`,
+      agent: 'SovereignForge Identity Controller',
+      result: 'SUCCESS',
+      risk: 'Medium',
+      hashSignature: `0x${Math.floor(Math.random() * 0xFFFFFFFFFF).toString(16).toUpperCase()}`,
+      details: `Revoked access credentials and terminated active session for ${targetUser?.name || userId}.`,
+      clientIp: '10.14.88.10 (On-Prem SOC Console)'
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+
+    showToast('User Revoked', `Account for ${targetUser?.name || userId} has been deactivated.`, 'info');
+    return { success: true, message: 'User deprovisioned.' };
+  };
+
   // Guided Demo Tour Actions
   const startDemoTour = () => {
     setIsDemoTourActive(true);
@@ -689,7 +808,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       toast,
       showToast,
-      clearToast
+      clearToast,
+
+      users,
+      addUser,
+      deleteUser
     }}>
       {children}
     </AppContext.Provider>
