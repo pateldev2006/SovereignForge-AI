@@ -25,12 +25,12 @@ export const RolePermissionMatrix: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    employeeId: 'MRPL-ENG-' + Math.floor(10000 + Math.random() * 90000),
+    employeeId: 'ENG-' + Math.floor(10000 + Math.random() * 90000),
     role: 'PlantEngineer' as UserRole,
     roleTitle: 'Plant & Process Engineer',
     department: 'Process Engineering — CDU/VDU Unit 03',
     clearanceLevel: 'L1 - Process Operations' as const,
-    location: 'MRPL Refinery Complex, Mangalore'
+    location: 'Industrial Complex, Unit 03'
   });
 
   const roles: { role: UserRole; title: string; label: string; defaultClearance: string; defaultDept: string }[] = [
@@ -112,12 +112,12 @@ export const RolePermissionMatrix: React.FC = () => {
       setFormData({
         name: '',
         email: '',
-        employeeId: 'MRPL-ENG-' + Math.floor(10000 + Math.random() * 90000),
+        employeeId: 'ENG-' + Math.floor(10000 + Math.random() * 90000),
         role: 'PlantEngineer',
         roleTitle: 'Plant & Process Engineer',
         department: 'Process Engineering — CDU/VDU Unit 03',
         clearanceLevel: 'L1 - Process Operations',
-        location: 'MRPL Refinery Complex, Mangalore'
+        location: 'Industrial Complex, Unit 03'
       });
     }
   };
@@ -388,7 +388,7 @@ export const RolePermissionMatrix: React.FC = () => {
                 <div>
                   <h3 className="font-bold text-sm tracking-tight">Provision SovereignForge User Account</h3>
                   <span className="text-[10px] text-slate-400 font-mono">
-                    Air-Gapped MRPL Active Directory Enrollment
+                    Air-Gapped Enterprise Active Directory Enrollment
                   </span>
                 </div>
               </div>
@@ -427,7 +427,7 @@ export const RolePermissionMatrix: React.FC = () => {
                     required
                     value={formData.employeeId}
                     onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                    placeholder="MRPL-ENG-98214"
+                    placeholder="ENG-98214"
                     className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-mono font-semibold focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                   />
                 </div>
@@ -435,14 +435,14 @@ export const RolePermissionMatrix: React.FC = () => {
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1 uppercase tracking-wider text-[10px]">
-                  Official MRPL Email *
+                  Official Enterprise Email *
                 </label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="v.rao@mrpl.co.in"
+                  placeholder="v.rao@enterprise.local"
                   className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-mono focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
@@ -497,7 +497,7 @@ export const RolePermissionMatrix: React.FC = () => {
                   Air-Gap Cryptographic Enrollment
                 </div>
                 <p className="text-blue-800 leading-tight">
-                  Upon submission, an RSA-2048 private key will be generated and signed by the MRPL Root Certificate Authority with zero outbound egress.
+                  Upon submission, an RSA-2048 private key will be generated and signed by the Enterprise Root Certificate Authority with zero outbound egress.
                 </p>
               </div>
 

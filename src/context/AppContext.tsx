@@ -326,7 +326,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       result: 'SUCCESS',
       risk: 'Medium',
       hashSignature: `0x${Math.floor(Math.random() * 0xFFFFFFFFFF).toString(16).toUpperCase()}`,
-      details: `Autonomous analysis completed in 12.4s. Detected 1 critical SOP deviation (+6 mos). Drafted Approval Note Ref: MRPL/MECH/2026/HX-204-APPR.`,
+      details: `Autonomous analysis completed in 12.4s. Detected 1 critical SOP deviation (+6 mos). Drafted Approval Note Ref: MECH/2026/HX-204-APPR.`,
       clientIp: '10.14.32.105 (Internal LAN)',
       forensicTrace: {
         modelUsed: 'Qwen2.5-VL-7B + R1-Distill',
@@ -436,7 +436,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       user: `${currentUser.name} (${currentUser.role})`,
       role: currentUser.role,
       action: 'DELIVERABLE_APPROVED_WITH_SIGNATURE',
-      resource: `Approval ID: ${approvalId} (MRPL/MECH/2026/HX-204-APPR)`,
+      resource: `Approval ID: ${approvalId} (MECH/2026/HX-204-APPR)`,
       agent: 'Deliverable Approval Agent',
       result: 'SUCCESS',
       risk: 'Low',
@@ -574,7 +574,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return m;
     }));
 
-    showToast('Model Integrity Verified', `Cryptographic weight checksum matches MRPL Root Certificate.`, 'success');
+    showToast('Model Integrity Verified', `Cryptographic weight checksum matches Enterprise Root Certificate.`, 'success');
   };
 
   // ═══ ADMIN USER PROVISIONING & DEPROVISIONING (CISO ONLY) ═══

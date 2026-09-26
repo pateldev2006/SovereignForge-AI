@@ -6,7 +6,7 @@ import { ShieldCheck, Lock, ArrowRight, UserCheck, Key, Sparkles, Building2, Che
 
 export const Login: React.FC = () => {
   const { switchUser, navigateTo, showToast, users } = useApp();
-  const [employeeIdInput, setEmployeeIdInput] = useState('MRPL-ENG-10482');
+  const [employeeIdInput, setEmployeeIdInput] = useState('ENG-10482');
   const [passwordInput, setPasswordInput] = useState('••••••••••••');
   const [useSmartCard, setUseSmartCard] = useState(false);
 
@@ -15,7 +15,7 @@ export const Login: React.FC = () => {
     // Default to Plant Engineer
     switchUser('PlantEngineer');
     navigateTo('workbench');
-    showToast('Authenticated Successfully', 'Connected to air-gapped MRPL SovereignForge instance.', 'success');
+    showToast('Authenticated Successfully', 'Connected to air-gapped SovereignForge instance.', 'success');
   };
 
   const handleQuickRoleLogin = (userIdOrRole: string, role: UserRole) => {
@@ -41,7 +41,7 @@ export const Login: React.FC = () => {
               SOVEREIGNFORGE<span className="text-blue-600">.AI</span>
             </span>
             <span className="text-[10px] text-slate-500 font-medium leading-none mt-0.5 block">
-              Mangalore Refinery and Petrochemicals Limited (MRPL)
+              Enterprise Air-Gapped Industrial AI Workbench
             </span>
           </div>
         </div>
@@ -65,21 +65,21 @@ export const Login: React.FC = () => {
               Secure Industrial AI Workbench
             </h1>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Authenticate using your MRPL Employee Credentials or FIPS-140-3 Hardware Smart Card.
+              Authenticate using your Enterprise Credentials or FIPS-140-3 Hardware Smart Card.
             </p>
           </div>
 
           <form onSubmit={handleStandardLogin} className="space-y-4 text-xs">
             <div>
               <label className="block font-bold text-slate-700 mb-1 uppercase tracking-wider text-[10px]">
-                MRPL Employee ID / Username
+                Employee ID / Username
               </label>
               <input
                 type="text"
                 value={employeeIdInput}
                 onChange={(e) => setEmployeeIdInput(e.target.value)}
                 className="w-full p-3 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-mono font-semibold focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-                placeholder="MRPL-ENG-10482"
+                placeholder="ENG-10482"
               />
             </div>
 
@@ -163,7 +163,7 @@ export const Login: React.FC = () => {
 
       {/* Footer */}
       <div className="max-w-6xl mx-auto w-full text-center text-xs text-slate-400 font-medium">
-        MRPL Confidential Industrial AI Prototype • Powered by SovereignForge AI On-Premise Engine • Zero Data Egress
+        Confidential Industrial AI Platform • Powered by SovereignForge AI On-Premise Engine • Zero Data Egress
       </div>
 
     </div>

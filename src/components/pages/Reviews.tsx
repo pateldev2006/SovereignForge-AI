@@ -39,7 +39,7 @@ export const Reviews: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono font-bold text-purple-900 bg-purple-100/70 px-2 py-0.5 rounded border border-purple-200">
-                  MRPL/QA/2026/PSV-304-AUD
+                  QA/2026/PSV-304-AUD
                 </span>
                 <span className="text-xs font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Approved

@@ -19,7 +19,7 @@ export const Approvals: React.FC = () => {
   } = useApp();
 
   const [selectedApproval, setSelectedApproval] = useState<ApprovalQueueItem | null>(approvals[0] || null);
-  const [signatureInput, setSignatureInput] = useState<string>('SIG_RSA4096_DR_SHETTY_MRPL_EXEC');
+  const [signatureInput, setSignatureInput] = useState<string>('SIG_RSA4096_DR_SHETTY_Enterprise_EXEC');
   const [reviewNotes, setReviewNotes] = useState<string>(
     'Approved conditionally. The proposed 18-month overhaul deferral is strictly rejected per SOP-4.2.1. Maximum overhaul interval enforced at 12 months (September 2027).'
   );
@@ -36,7 +36,7 @@ export const Approvals: React.FC = () => {
   };
 
   const handleReject = (id: string) => {
-    rejectDeliverable(id, reviewNotes || 'Rejected due to critical non-conformance with MRPL safety guidelines.');
+    rejectDeliverable(id, reviewNotes || 'Rejected due to critical non-conformance with Enterprise safety guidelines.');
     setSelectedApproval(null);
   };
 

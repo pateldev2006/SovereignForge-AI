@@ -1,23 +1,23 @@
 // ============================================================================
 // SOVEREIGNFORGE AI - CLIENT-SIDE PDF & DELIVERABLE EXPORT ENGINE
-// Generates official MRPL Industrial Compliance PDFs & Signed Reports
+// Generates official Enterprise Industrial Compliance PDFs & Signed Reports
 // ============================================================================
 
 import { AuditEvent, TaskDeliverable } from '../types';
 
 /**
- * Generates and triggers download of a printable, high-fidelity MRPL PDF / HTML Report
+ * Generates and triggers download of a printable, high-fidelity Enterprise PDF / HTML Report
  */
 export function downloadAuditLedgerPDF(logs: AuditEvent[], userName: string) {
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  const auditId = `MRPL-AUD-EXPORT-${Date.now()}`;
+  const auditId = `AUD-EXPORT-${Date.now()}`;
   
   const content = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>MRPL Forensic Audit Ledger - ${auditId}</title>
+  <title>Enterprise Forensic Audit Ledger - ${auditId}</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #172033; margin: 30px; font-size: 11px; }
     .header { border-bottom: 2px solid #082B59; padding-bottom: 12px; margin-bottom: 16px; }
@@ -38,7 +38,7 @@ export function downloadAuditLedgerPDF(logs: AuditEvent[], userName: string) {
 </head>
 <body>
   <div class="header">
-    <h1 class="title">MANGALORE REFINERY AND PETROCHEMICALS LIMITED (MRPL)</h1>
+    <h1 class="title">Enterprise Air-Gapped Industrial AI Workbench</h1>
     <div class="subtitle">SovereignForge AI — On-Premise Air-Gapped Forensic Audit Ledger</div>
   </div>
 
@@ -90,7 +90,7 @@ export function downloadAuditLedgerPDF(logs: AuditEvent[], userName: string) {
       <span class="hash">SHA256: 7f8a9b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcd</span>
     </div>
     <div style="text-align: right;">
-      MRPL Cyber Security & Regulatory Compliance Directorate<br>
+      Industrial Cybersecurity Directorate & Regulatory Compliance Directorate<br>
       Confidential — Internal Use Only
     </div>
   </div>
@@ -115,7 +115,7 @@ export function downloadAuditLedgerPDF(logs: AuditEvent[], userName: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `MRPL-Forensic-Audit-Ledger-${Date.now()}.html`;
+    a.download = `Enterprise-Forensic-Audit-Ledger-${Date.now()}.html`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -152,7 +152,7 @@ export function downloadApprovalNotePDF(deliverable: TaskDeliverable, approverNa
       Ref: ${deliverable.referenceNumber}<br>
       Date: ${deliverable.generatedDate}
     </div>
-    <h1 class="title">MANGALORE REFINERY AND PETROCHEMICALS LIMITED</h1>
+    <h1 class="title">Enterprise Industrial Complex</h1>
     <div class="subtitle">Asset Integrity & Process Engineering Directorate • CDU/VDU Complex</div>
   </div>
 
@@ -199,12 +199,12 @@ export function downloadApprovalNotePDF(deliverable: TaskDeliverable, approverNa
     <div>
       <strong>Prepared By:</strong><br>
       Rajesh Kumar (Plant / Process Engineer)<br>
-      MRPL Process Engineering Cell
+      Process Engineering Directorate Cell
     </div>
     <div>
       <strong>Approved By:</strong><br>
       ${deliverable.approvedBy || approverName}<br>
-      <span class="signature-badge">✓ Digital RSA Signature: ${deliverable.digitalSignature || 'SIG_RSA4096_DR_SHETTY_MRPL_EXEC'}</span>
+      <span class="signature-badge">✓ Digital RSA Signature: ${deliverable.digitalSignature || 'SIG_RSA4096_DR_SHETTY_Enterprise_EXEC'}</span>
     </div>
   </div>
 

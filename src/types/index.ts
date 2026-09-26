@@ -1,6 +1,6 @@
 // ============================================================================
 // SOVEREIGNFORGE AI - CORE DOMAIN TYPES & RBAC ARCHITECTURE
-// Mangalore Refinery and Petrochemicals Limited (MRPL) Industrial Prototype
+// Enterprise Air-Gapped Industrial AI Workbench Industrial Prototype
 // ============================================================================
 
 export type UserRole =

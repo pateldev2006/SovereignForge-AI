@@ -32,7 +32,7 @@ export const KnowledgeBase: React.FC = () => {
             Refinery SOPs & Engineering Standards
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Indexed vector repository of MRPL Standard Operating Procedures, OISD standards, ASME codes, and equipment turnaround manuals.
+            Indexed vector repository of Enterprise Standard Operating Procedures, OISD standards, ASME codes, and equipment turnaround manuals.
           </p>
         </div>
 

@@ -8,16 +8,16 @@ export const Policies: React.FC = () => {
   const [policies, setPolicies] = useState([
     {
       id: 'pol-01',
-      code: 'MRPL-SEC-POL-01',
+      code: 'SEC-POL-01',
       title: 'Zero Outbound Network Egress (Air-Gap Mandate)',
-      description: 'Strict hardware lock preventing any outbound TCP/UDP packets to non-MRPL subnets.',
+      description: 'Strict hardware lock preventing any outbound TCP/UDP packets to non-Enterprise subnets.',
       status: 'Enforced',
       isLocked: true,
       category: 'Perimeter Defense'
     },
     {
       id: 'pol-02',
-      code: 'MRPL-SEC-POL-02',
+      code: 'SEC-POL-02',
       title: 'Human-in-the-Loop Sign-off for High-Risk Actions',
       description: 'Mandates explicit digital RSA sign-off for any turnaround schedule deviation or pressure setpoint change.',
       status: 'Enforced',
@@ -26,7 +26,7 @@ export const Policies: React.FC = () => {
     },
     {
       id: 'pol-03',
-      code: 'MRPL-SEC-POL-03',
+      code: 'SEC-POL-03',
       title: 'Local Model Weight Cryptographic Integrity Verification',
       description: 'Verifies SHA-256 weight hash against signed root certificate before loading into GPU memory.',
       status: 'Enforced',
@@ -35,7 +35,7 @@ export const Policies: React.FC = () => {
     },
     {
       id: 'pol-04',
-      code: 'MRPL-SEC-POL-04',
+      code: 'SEC-POL-04',
       title: 'Prompt Injection & Jailbreak Sanitization Layer',
       description: 'Pre-screens document OCR text streams for embedded adversarial directives.',
       status: 'Enforced',

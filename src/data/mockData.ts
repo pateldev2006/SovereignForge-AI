@@ -16,10 +16,10 @@ export const DEMO_USERS: User[] = [
     role: 'PlantEngineer',
     roleTitle: 'Lead Plant & Process Engineer',
     department: 'Process Engineering — CDU/VDU Unit 03',
-    employeeId: 'MRPL-ENG-10482',
+    employeeId: 'ENG-10482',
     clearanceLevel: 'L1 - Process Operations',
     activeSession: true,
-    location: 'MRPL Refinery Complex, Mangalore',
+    location: 'Industrial Complex, Unit 03',
     avatar: 'RK'
   },
   {
@@ -29,7 +29,7 @@ export const DEMO_USERS: User[] = [
     role: 'ITEngineer',
     roleTitle: 'Senior Industrial Automation & SCADA Engineer',
     department: 'IT, OT & Automation Infrastructure',
-    employeeId: 'MRPL-IT-08914',
+    employeeId: 'IT-08914',
     clearanceLevel: 'L2 - Engineering & SCADA',
     activeSession: true,
     location: 'Central Control Building (CCB-2)',
@@ -42,7 +42,7 @@ export const DEMO_USERS: User[] = [
     role: 'QAOfficer',
     roleTitle: 'Design & Asset Integrity QA Officer',
     department: 'Quality Assurance & Technical Services',
-    employeeId: 'MRPL-QA-06721',
+    employeeId: 'QA-06721',
     clearanceLevel: 'L3 - Quality & Compliance',
     activeSession: true,
     location: 'Technical Services Directorate',
@@ -55,7 +55,7 @@ export const DEMO_USERS: User[] = [
     role: 'Approver',
     roleTitle: 'Chief General Manager & Approving Authority',
     department: 'Directorate of Refinery Operations',
-    employeeId: 'MRPL-EXEC-01205',
+    employeeId: 'EXEC-01205',
     clearanceLevel: 'L4 - Executive Approval',
     activeSession: true,
     location: 'Executive Administrative Block',
@@ -68,7 +68,7 @@ export const DEMO_USERS: User[] = [
     role: 'CISO',
     roleTitle: 'Chief Information Security Officer (CISO)',
     department: 'Industrial Cybersecurity & Governance',
-    employeeId: 'MRPL-SEC-00109',
+    employeeId: 'SEC-00109',
     clearanceLevel: 'L5 - CISO Security Clearance',
     activeSession: true,
     location: 'Air-Gapped SOC / Cyber Operations',
@@ -103,7 +103,7 @@ export const INITIAL_DOCUMENTS: DocumentItem[] = [
   },
   {
     id: 'doc-sop-421',
-    title: 'MRPL SOP-4.2.1: Periodic Inspection & Overhaul of Shell & Tube Exchangers',
+    title: 'SOP-4.2.1: Periodic Inspection & Overhaul of Shell & Tube Exchangers',
     fileName: 'SOP_4.2.1.pdf',
     fileType: 'pdf',
     fileSize: '2.8 MB',
@@ -193,7 +193,7 @@ export const INITIAL_DOCUMENTS: DocumentItem[] = [
 export const INITIAL_SOPS: SOPItem[] = [
   {
     id: 'sop-421',
-    sopCode: 'MRPL-SOP-4.2.1',
+    sopCode: 'Enterprise-SOP-4.2.1',
     title: 'Standard Operating Procedure: Shell & Tube Heat Exchanger Inspection & Maintenance',
     category: 'Mechanical',
     version: 'Rev 4.2',
@@ -229,7 +229,7 @@ export const INITIAL_SOPS: SOPItem[] = [
   },
   {
     id: 'sop-214',
-    sopCode: 'MRPL-SOP-2.1.4',
+    sopCode: 'Enterprise-SOP-2.1.4',
     title: 'Process Safety Management: Mechanical Isolation & LOTO for Pressure Vessels',
     category: 'Safety',
     version: 'Rev 3.0',
@@ -276,7 +276,7 @@ export const SAMPLE_RETRIEVED_SOURCES: SourceCitation[] = [
   {
     id: 'cite-01',
     citationIndex: 1,
-    documentTitle: 'MRPL SOP-4.2.1: Shell & Tube Exchanger Procedure',
+    documentTitle: 'SOP-4.2.1: Shell & Tube Exchanger Procedure',
     documentCode: 'SOP-4.2.1',
     pageNumber: 18,
     sectionTitle: 'Section 4.2.1 — Mandatory Inspection Frequency',
@@ -289,7 +289,7 @@ export const SAMPLE_RETRIEVED_SOURCES: SourceCitation[] = [
     id: 'cite-02',
     citationIndex: 2,
     documentTitle: 'Inspection Report: Heat Exchanger HX-204 (Q3-2026)',
-    documentCode: 'MRPL/INSP/2026/HX-204',
+    documentCode: 'INSP/2026/HX-204',
     pageNumber: 4,
     sectionTitle: 'Section 3.2 — Schedule & Maintenance Recommendations',
     exactExcerpt: 'Based on remaining calculated corrosion allowance on shell wall (calculated 4.2mm remaining), the field NDT team recommends deferring the next comprehensive turnaround and internal tube pulling to 18 months from current date (March 2028).',
@@ -300,7 +300,7 @@ export const SAMPLE_RETRIEVED_SOURCES: SourceCitation[] = [
   {
     id: 'cite-03',
     citationIndex: 3,
-    documentTitle: 'MRPL SOP-4.2.1: Shell & Tube Exchanger Procedure',
+    documentTitle: 'SOP-4.2.1: Shell & Tube Exchanger Procedure',
     documentCode: 'SOP-4.2.1',
     pageNumber: 22,
     sectionTitle: 'Section 4.3.4 — Tube Wall Thinning & Plugging Limits',
@@ -324,7 +324,7 @@ export const SAMPLE_DEVIATION: SOPDeviation = {
   severity: 'Critical',
   observedSourceDoc: 'Inspection Report HX-204 (inspection_report.pdf) — Page 4',
   observedPage: 4,
-  requiredStandardDoc: 'MRPL SOP-4.2.1 (SOP_4.2.1.pdf) — Page 18, Section 4.2.1',
+  requiredStandardDoc: 'SOP-4.2.1 (SOP_4.2.1.pdf) — Page 18, Section 4.2.1',
   requiredPage: 18,
   riskDescription: 'Operating sour crude heat exchanger 6 months past mandatory 12-month limit introduces severe vulnerability to undetected tube breach, crude-to-naphtha cross-contamination, and uncontained high-temperature flange leakage.',
   mandatoryAction: 'Human Review Required. Reject 18-month deferral; enforce mandatory 12-month overhaul by September 2027 with mandatory gasket seating overhaul.',
@@ -405,10 +405,10 @@ export const SAMPLE_AGENT_STEPS: AgentStepTrace[] = [
     id: 'step-07',
     stepNumber: 7,
     name: 'Official Deliverable & Approval Note Generation',
-    model: 'MRPL Industrial Template Generator v3.1',
+    model: 'Enterprise Industrial Template Generator v3.1',
     status: 'completed',
     durationMs: 1650,
-    details: 'Structured formal executive note Ref: MRPL/MECH/2026/HX-204-APPR ready for human engineering review.',
+    details: 'Structured formal executive note Ref: MECH/2026/HX-204-APPR ready for human engineering review.',
     tokensProcessed: 3800,
     outputSummary: 'Generated 4-page formal approval draft'
   }
@@ -419,14 +419,14 @@ export const SAMPLE_AGENT_STEPS: AgentStepTrace[] = [
 // ============================================================================
 export const SAMPLE_DELIVERABLE: TaskDeliverable = {
   id: 'deliv-hx204-appr',
-  referenceNumber: 'MRPL/MECH/2026/HX-204-APPR',
+  referenceNumber: 'MECH/2026/HX-204-APPR',
   title: 'Technical Approval Note: Heat Exchanger HX-204 Maintenance & Overhaul Schedule',
   equipmentId: 'HX-204',
   equipmentName: 'Crude Pre-Heat Train Exchanger 204 (Shell & Tube)',
   unit: 'Crude Distillation Unit (CDU-03)',
   generatedDate: '2026-09-26 10:42:18',
   generatedByModel: 'SovereignForge Agentic Orchestrator (Qwen2.5-VL / R1-Distill)',
-  executiveSummary: 'This technical approval note synthesizes the Q3-2026 Non-Destructive Testing (NDT) inspection findings for Heat Exchanger HX-204 and validates proposed overhaul timelines against mandatory MRPL Standard Operating Procedure SOP-4.2.1. While ultrasonic wall thickness measurements confirm adequate shell base metal integrity, the field inspection recommendation to extend the turnaround interval to 18 months is a CRITICAL SOP DEVIATION. Approval is recommended conditionally upon enforcing a strict 12-month maximum turnaround deadline (September 2027).',
+  executiveSummary: 'This technical approval note synthesizes the Q3-2026 Non-Destructive Testing (NDT) inspection findings for Heat Exchanger HX-204 and validates proposed overhaul timelines against mandatory Enterprise Standard Operating Procedure SOP-4.2.1. While ultrasonic wall thickness measurements confirm adequate shell base metal integrity, the field inspection recommendation to extend the turnaround interval to 18 months is a CRITICAL SOP DEVIATION. Approval is recommended conditionally upon enforcing a strict 12-month maximum turnaround deadline (September 2027).',
   findings: [
     {
       point: 'Shell base metal ultrasonic thickness scan indicates 14.8 mm average (Design: 16.0 mm; Minimum allowable: 10.6 mm; calculated corrosion allowance remaining: 4.2 mm).',
@@ -493,7 +493,7 @@ export const INITIAL_TASKS: IndustrialTask[] = [
     id: 'task-hx204',
     taskNumber: 'SF-TASK-2026-0042',
     title: 'Prepare Approval Note for Heat Exchanger HX-204 & Verify Against SOP-4.2.1',
-    description: 'Ingest Q3-2026 NDT inspection report, extract ultrasonic tube bundle measurements, cross-reference MRPL SOP-4.2.1, detect maintenance schedule deviations, and draft formal engineering approval note.',
+    description: 'Ingest Q3-2026 NDT inspection report, extract ultrasonic tube bundle measurements, cross-reference SOP-4.2.1, detect maintenance schedule deviations, and draft formal engineering approval note.',
     requestedBy: 'Rajesh Kumar (Plant Engineer)',
     requestedByRole: 'PlantEngineer',
     createdAt: '2026-09-26 10:41:00',
@@ -593,7 +593,7 @@ export const INITIAL_APPROVALS: ApprovalQueueItem[] = [
     deliverable: {
       ...SAMPLE_DELIVERABLE,
       id: 'deliv-pid-appr',
-      referenceNumber: 'MRPL/QA/2026/PSV-304-AUD',
+      referenceNumber: 'QA/2026/PSV-304-AUD',
       title: 'Relief Valve PSV-304 Setpoint Compliance Certification',
       status: 'Approved',
       approvedBy: 'Dr. Vikram Shetty (Approving Authority)',
@@ -763,7 +763,7 @@ export const INITIAL_FIREWALL_RULES: AICapabilityFirewallRule[] = [
   {
     id: 'fw-rule-04',
     agentName: 'Deliverable Approval Agent',
-    agentRole: 'Formats official MRPL approval notes & generates cryptographic hashes',
+    agentRole: 'Formats official Enterprise approval notes & generates cryptographic hashes',
     readDocs: true,
     writeFiles: true,
     runCode: false,
@@ -917,7 +917,7 @@ export const INITIAL_AUDIT_LOGS: AuditEvent[] = [
     result: 'SUCCESS',
     risk: 'Medium',
     hashSignature: '0x7E3A99B4021F8C2A',
-    details: 'Completed 7-step autonomous analysis in 12.4s. Detected critical SOP-4.2.1 deviation (+6 mos). Drafted approval note Ref: MRPL/MECH/2026/HX-204-APPR.',
+    details: 'Completed 7-step autonomous analysis in 12.4s. Detected critical SOP-4.2.1 deviation (+6 mos). Drafted approval note Ref: MECH/2026/HX-204-APPR.',
     clientIp: '10.14.32.105 (Internal LAN)',
     forensicTrace: {
       modelUsed: 'Qwen2.5-VL-7B + R1-Distill',
@@ -964,7 +964,7 @@ export const INITIAL_AUDIT_LOGS: AuditEvent[] = [
     user: 'Dr. Vikram Shetty (Approver)',
     role: 'Approver',
     action: 'APPROVAL_NOTE_SIGNED',
-    resource: 'MRPL/QA/2026/PSV-304-AUD (P&ID Audit)',
+    resource: 'QA/2026/PSV-304-AUD (P&ID Audit)',
     agent: 'Deliverable Approval Agent',
     result: 'SUCCESS',
     risk: 'Low',
@@ -999,7 +999,7 @@ export const INITIAL_AUDIT_LOGS: AuditEvent[] = [
     result: 'SUCCESS',
     risk: 'Low',
     hashSignature: '0x3344556677889900',
-    details: 'Validated SHA-256 weight hash against signed MRPL cybersecurity root cert. Integrity 100% verified.',
+    details: 'Validated SHA-256 weight hash against signed Enterprise cybersecurity root cert. Integrity 100% verified.',
     clientIp: '10.14.5.2 (SOC Secure Console)'
   }
 ];
@@ -1013,7 +1013,7 @@ export const INITIAL_NETWORK_TELEMETRY: NetworkTelemetry = {
   inboundConnections: 6,
   activeInterfaces: [
     {
-      name: 'eth0 (MRPL Process LAN)',
+      name: 'eth0 (Enterprise Process LAN)',
       ip: '10.14.32.1',
       subnet: '255.255.240.0',
       status: 'UP',
@@ -1045,7 +1045,7 @@ export const INITIAL_NETWORK_TELEMETRY: NetworkTelemetry = {
     { name: 'Milvus Vector Database (Air-Gapped)', endpoint: '192.168.100.12', port: 19530, status: 'HEALTHY', latencyMs: 1.4 },
     { name: 'MinIO Local S3 Document Storage', endpoint: '192.168.100.14', port: 9000, status: 'HEALTHY', latencyMs: 0.8 },
     { name: 'PostgreSQL Forensic Audit Database', endpoint: '192.168.100.16', port: 5432, status: 'HEALTHY', latencyMs: 0.9 },
-    { name: 'MRPL Enterprise LDAP / Active Directory', endpoint: '10.14.1.20', port: 636, status: 'ACTIVE', latencyMs: 3.2 },
+    { name: 'Enterprise Enterprise LDAP / Active Directory', endpoint: '10.14.1.20', port: 636, status: 'ACTIVE', latencyMs: 3.2 },
     { name: 'DCS / SCADA Process Historian Gateway', endpoint: '10.14.20.10', port: 502, status: 'HEALTHY', latencyMs: 4.5 }
   ],
   threatsBlockedCount: 14,

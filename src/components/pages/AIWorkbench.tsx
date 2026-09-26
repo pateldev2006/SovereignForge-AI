@@ -23,7 +23,7 @@ const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
   {
     id: 'sys-1',
     role: 'system',
-    content: 'Secure session initiated. All queries processed locally on MRPL air-gapped infrastructure. Zero data egress.',
+    content: 'Secure session initiated. All queries processed locally on Enterprise air-gapped infrastructure. Zero data egress.',
     timestamp: new Date(Date.now() - 1200000),
   },
   {
@@ -35,9 +35,9 @@ const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
   {
     id: 'ast-1',
     role: 'assistant',
-    content: 'Based on the NDT Inspection Report (Doc ID: MRPL/INSP/2026/HX-204-Q3, dated 15-Jun-2026), the measured wall thickness of HX-204 shell side is **8.2 mm** at the thinnest point (Location: Nozzle N2 vicinity, Grid Reference C4).\n\nThe original design thickness per ASME Section VIII Div.1 is **12.5 mm**, and the minimum retirement thickness per SOP-4.2.1 Rev 4 is **7.8 mm**.\n\n📊 **Corrosion rate:** 0.28 mm/year (calculated from 2019 baseline)\n📅 **Estimated remaining life:** ~1.4 years before retirement threshold\n\n⚠️ This is within the SOP-mandated "Enhanced Monitoring Zone" (< 2mm above retirement). SOP-4.2.1 §6.3 requires inspection frequency to be increased to quarterly.',
+    content: 'Based on the NDT Inspection Report (Doc ID: INSP/2026/HX-204-Q3, dated 15-Jun-2026), the measured wall thickness of HX-204 shell side is **8.2 mm** at the thinnest point (Location: Nozzle N2 vicinity, Grid Reference C4).\n\nThe original design thickness per ASME Section VIII Div.1 is **12.5 mm**, and the minimum retirement thickness per SOP-4.2.1 Rev 4 is **7.8 mm**.\n\n📊 **Corrosion rate:** 0.28 mm/year (calculated from 2019 baseline)\n📅 **Estimated remaining life:** ~1.4 years before retirement threshold\n\n⚠️ This is within the SOP-mandated "Enhanced Monitoring Zone" (< 2mm above retirement). SOP-4.2.1 §6.3 requires inspection frequency to be increased to quarterly.',
     timestamp: new Date(Date.now() - 1050000),
-    citations: ['SOP-4.2.1 §6.3', 'MRPL/INSP/2026/HX-204-Q3'],
+    citations: ['SOP-4.2.1 §6.3', 'INSP/2026/HX-204-Q3'],
   },
   {
     id: 'usr-2',
@@ -50,7 +50,7 @@ const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
     role: 'assistant',
     content: 'Based on the current corrosion rate and SOP guidelines, here is the assessment:\n\n**Immediate turnaround is NOT required**, but early planning is recommended:\n\n1. **Current status:** Wall thickness (8.2mm) is above the retirement limit (7.8mm) with ~1.4 years margin\n2. **SOP-4.2.1 §7.1** states turnaround must be scheduled when remaining life falls below 12 months — you have ~2 months of buffer\n3. **Recommendation:** Schedule turnaround for Q1 2027 (6 months ahead of the normal 5-year cycle)\n\n**Required actions per SOP:**\n- ✅ Increase inspection to quarterly (next due: Sep 2026)\n- ✅ Issue Engineering Change Notice (ECN) for revised turnaround schedule\n- ✅ Notify Approving Authority for budget pre-approval\n\nWould you like me to draft the Turnaround Advance Planning Note for management approval?',
     timestamp: new Date(Date.now() - 850000),
-    citations: ['SOP-4.2.1 §7.1', 'SOP-4.2.1 §6.3', 'MRPL Turnaround Policy Rev 3'],
+    citations: ['SOP-4.2.1 §7.1', 'SOP-4.2.1 §6.3', 'Industrial Turnaround Policy Rev 3'],
   },
 ];
 
@@ -58,8 +58,8 @@ const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
 const AI_RESPONSE_BANK: { keywords: string[]; response: string; citations: string[] }[] = [
   {
     keywords: ['turnaround', 'plan', 'draft', 'planning note'],
-    response: 'I\'ve drafted the Turnaround Advance Planning Note (Ref: MRPL/MECH/2026/TA-HX204-ADV).\n\n**Key contents:**\n- Equipment: HX-204 Shell & Tube Heat Exchanger\n- Proposed date: Q1 2027 (Jan-Mar window)\n- Estimated duration: 14 days\n- Budget estimate: ₹2.8 Cr (tube bundle replacement + shell weld overlay)\n- Critical path: Tube bundle procurement (12-week lead time)\n\nThe note has been formatted per MRPL Technical Services template and is ready for your review before submission to the Approving Authority queue.\n\nWould you like me to send it to Dr. Vikram Shetty\'s approval queue?',
-    citations: ['MRPL Turnaround Policy Rev 3', 'MRPL/PROC/Budget-2026'],
+    response: 'I\'ve drafted the Turnaround Advance Planning Note (Ref: MECH/2026/TA-HX204-ADV).\n\n**Key contents:**\n- Equipment: HX-204 Shell & Tube Heat Exchanger\n- Proposed date: Q1 2027 (Jan-Mar window)\n- Estimated duration: 14 days\n- Budget estimate: ₹2.8 Cr (tube bundle replacement + shell weld overlay)\n- Critical path: Tube bundle procurement (12-week lead time)\n\nThe note has been formatted per Technical Services Directorate template and is ready for your review before submission to the Approving Authority queue.\n\nWould you like me to send it to Dr. Vikram Shetty\'s approval queue?',
+    citations: ['Industrial Turnaround Policy Rev 3', 'PROC/Budget-2026'],
   },
   {
     keywords: ['SOP', 'standard', 'procedure', 'compliance'],
@@ -73,8 +73,8 @@ const AI_RESPONSE_BANK: { keywords: string[]; response: string; citations: strin
   },
   {
     keywords: ['approve', 'approval', 'send', 'submit', 'queue'],
-    response: 'I\'ve prepared the submission package for the Approving Authority queue:\n\n📋 **Approval Package Contents:**\n1. Technical Approval Note (MRPL/MECH/2026/HX-204-APPR)\n2. NDT Inspection Report Summary\n3. SOP Deviation Analysis (6-month overhaul variance)\n4. Cost estimate and turnaround schedule\n5. Risk assessment matrix\n\n**Routing:** → Dr. Vikram Shetty (VP Technical) → Budget Committee\n**Priority:** HIGH (equipment integrity concern)\n**Digital signature:** Required (RSA-2048 + employee smart card)\n\nThe package is ready in the Approval Queue. The Approving Authority will receive a notification on their dashboard.\n\n✅ All provenance chains are intact — every claim traces back to source documents.',
-    citations: ['MRPL/MECH/2026/HX-204-APPR', 'Approval Workflow SOP-9.1'],
+    response: 'I\'ve prepared the submission package for the Approving Authority queue:\n\n📋 **Approval Package Contents:**\n1. Technical Approval Note (MECH/2026/HX-204-APPR)\n2. NDT Inspection Report Summary\n3. SOP Deviation Analysis (6-month overhaul variance)\n4. Cost estimate and turnaround schedule\n5. Risk assessment matrix\n\n**Routing:** → Dr. Vikram Shetty (VP Technical) → Budget Committee\n**Priority:** HIGH (equipment integrity concern)\n**Digital signature:** Required (RSA-2048 + employee smart card)\n\nThe package is ready in the Approval Queue. The Approving Authority will receive a notification on their dashboard.\n\n✅ All provenance chains are intact — every claim traces back to source documents.',
+    citations: ['MECH/2026/HX-204-APPR', 'Approval Workflow SOP-9.1'],
   },
 ];
 
@@ -137,7 +137,7 @@ export const AIWorkbench: React.FC = () => {
     const fileCount = newFileNames.length;
     showToast(
       'Document Attached & Indexed',
-      `Attached ${fileCount} file(s): ${newFileNames.join(', ')}. Local vision OCR & vector embeddings generated on MRPL GPU node.`,
+      `Attached ${fileCount} file(s): ${newFileNames.join(', ')}. Local vision OCR & vector embeddings generated on Enterprise GPU node.`,
       'success'
     );
 
@@ -225,7 +225,7 @@ export const AIWorkbench: React.FC = () => {
   const handleSendForApproval = () => {
     showToast(
       'Dispatched to Approver Queue',
-      'Technical Approval Note MRPL/MECH/2026/HX-204-APPR submitted for executive review.',
+      'Technical Approval Note MECH/2026/HX-204-APPR submitted for executive review.',
       'success'
     );
   };
@@ -259,14 +259,14 @@ export const AIWorkbench: React.FC = () => {
                   SOVEREIGN INDUSTRIAL AI AGENT
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3" /> AIR-GAPPED MRPL LOCAL NODE
+                  <ShieldCheck className="w-3 h-3" /> AIR-GAPPED Local Sovereign Node
                 </span>
               </div>
               <h1 className="text-xl lg:text-2xl font-black text-white mt-2 tracking-tight">
                 Ask SovereignForge AI
               </h1>
               <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                Ask questions to query refinery inspection reports, engineering drawings, and SOP compliance standards. All reasoning executes on local MRPL GPUs with zero cloud egress.
+                Ask questions to query refinery inspection reports, engineering drawings, and SOP compliance standards. All reasoning executes on local Enterprise GPUs with zero cloud egress.
               </p>
             </div>
 
@@ -968,7 +968,7 @@ export const AIWorkbench: React.FC = () => {
                   Heat Exchanger HX-204 Overhaul Schedule Variance (+6 Months)
                 </h3>
                 <p className="text-xs text-rose-800/90 mt-0.5 max-w-3xl leading-relaxed">
-                  The field inspection report proposed a next turnaround interval of 18 months, which directly violates the 12-month maximum frequency mandated by MRPL SOP-4.2.1 for sour crude service.
+                  The field inspection report proposed a next turnaround interval of 18 months, which directly violates the 12-month maximum frequency mandated by SOP-4.2.1 for sour crude service.
                 </p>
               </div>
             </div>
@@ -996,7 +996,7 @@ export const AIWorkbench: React.FC = () => {
               <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">Mandatory Standard</span>
               <div className="text-base font-bold text-emerald-700 mt-0.5">12 Months (Max)</div>
               <span className="text-[10px] text-slate-600 font-medium block">
-                MRPL SOP-4.2.1 — Page 18 <button onClick={() => openSourceViewer(1)} className="text-blue-600 font-bold hover:underline">[1]</button>
+                SOP-4.2.1 — Page 18 <button onClick={() => openSourceViewer(1)} className="text-blue-600 font-bold hover:underline">[1]</button>
               </span>
             </div>
 
@@ -1074,7 +1074,7 @@ export const AIWorkbench: React.FC = () => {
             <div className="border-b-2 border-slate-900 pb-3 flex items-center justify-between text-xs">
               <div>
                 <span className="font-extrabold text-slate-900 text-xs tracking-tight block">
-                  MANGALORE REFINERY AND PETROCHEMICALS LIMITED (MRPL)
+                  Enterprise Air-Gapped Industrial AI Workbench
                 </span>
                 <span className="text-slate-500 text-[11px] font-medium">Directorate of Refinery Operations • Asset Integrity Division</span>
               </div>

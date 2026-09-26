@@ -10,7 +10,7 @@ export const CodeSandbox: React.FC = () => {
 
   const samplePythonCode = `# ==============================================================================
 # SOVEREIGNFORGE AI - AIR-GAPPED SCADA MODBUS POLLER
-# Target: MRPL CDU-03 Heat Exchanger HX-204 Temperature Transmitters (TT-104A/B)
+# Target: Enterprise CDU-03 Heat Exchanger HX-204 Temperature Transmitters (TT-104A/B)
 # Protocol: Modbus TCP (Isolated OT Subnet 10.14.20.10)
 # ==============================================================================
 

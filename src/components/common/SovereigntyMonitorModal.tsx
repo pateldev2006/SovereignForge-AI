@@ -76,7 +76,7 @@ export const SovereigntyMonitorModal: React.FC = () => {
                 <Radio className="w-3.5 h-3.5 text-emerald-600" />
               </div>
               <div className="text-xs font-mono font-bold text-slate-900 mt-1.5 truncate">
-                MRPL-HSM-2026
+                Enterprise-HSM-2026
               </div>
               <p className="text-[10px] text-slate-500 mt-0.5">FIPS-140-3 token verified.</p>
             </div>

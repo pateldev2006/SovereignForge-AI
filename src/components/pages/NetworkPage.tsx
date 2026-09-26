@@ -66,7 +66,7 @@ export const NetworkPage: React.FC = () => {
             <ShieldCheck className="w-5 h-5 text-emerald-600" />
           </div>
           <div className="text-base font-mono font-bold text-slate-900 mt-2">
-            MRPL-HSM-2026-FIPS
+            Enterprise-HSM-2026-FIPS
           </div>
           <p className="text-xs text-slate-500 mt-1">Hardware cryptotoken validated.</p>
         </div>

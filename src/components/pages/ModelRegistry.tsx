@@ -23,7 +23,7 @@ export const ModelRegistry: React.FC = () => {
             Local Air-Gapped Model Registry
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage local LLM weights, vision backends, dense embedding models, and OCR engines running directly on MRPL GPU clusters.
+            Manage local LLM weights, vision backends, dense embedding models, and OCR engines running directly on Enterprise GPU clusters.
           </p>
         </div>
 

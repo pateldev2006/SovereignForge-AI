@@ -95,12 +95,12 @@ export const Header: React.FC<{ onToggleMobileMenu?: () => void }> = ({ onToggle
                 <span className="font-extrabold text-slate-900 tracking-tight text-sm leading-none">
                   SOVEREIGNFORGE<span className="text-blue-600">.AI</span>
                 </span>
-                <span className="text-[9px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200/80 px-1 py-0.2 rounded leading-none">
-                  MRPL
+                <span className="text-[9px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.2 rounded leading-none">
+                  AIR-GAPPED
                 </span>
               </div>
               <p className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
-                Mangalore Refinery & Petrochemicals Ltd.
+                On-Premise Industrial AI Workbench
               </p>
             </div>
           </div>

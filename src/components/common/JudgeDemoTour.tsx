@@ -70,7 +70,7 @@ export const JudgeDemoTour: React.FC = () => {
       step: 8,
       title: 'Step 8: Generated Deliverable (Approval Note)',
       role: 'PlantEngineer',
-      desc: 'Preview realistic industrial deliverable Ref: MRPL/MECH/2026/HX-204-APPR complete with comparison tables, risk assessment, and draft recommendations.',
+      desc: 'Preview realistic industrial deliverable Ref: MECH/2026/HX-204-APPR complete with comparison tables, risk assessment, and draft recommendations.',
       actionLabel: 'Review Generated Note'
     },
     {
