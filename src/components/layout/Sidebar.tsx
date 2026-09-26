@@ -2,223 +2,252 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { PageId } from '../../types';
 import { 
-  LayoutDashboard, MessageSquareCode, FileText, Camera, ShieldCheck, 
-  Activity, CheckSquare, BarChart3, Users, Network, Cpu, Bot, Wrench, 
-  Sliders, Database, FileSpreadsheet, Lock, Sparkles, Terminal, X, ChevronRight, Layers, Bug
+  Bot, FileText, BookOpen, CheckSquare, ClipboardCheck, Terminal, 
+  History, ShieldAlert, Users, Sliders, Cpu, Network, 
+  Database, Lock, ChevronRight
 } from 'lucide-react';
 
-interface SidebarProps {
-  isMobileOpen: boolean;
-  onCloseMobile: () => void;
-}
-
-interface MenuItem {
+interface NavItem {
   id: PageId;
   label: string;
   icon: React.ReactNode;
-  badge?: number | string;
-  adminOnly?: boolean;
+  badge?: string | number;
+  badgeColor?: string;
+  moduleKey: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile }) => {
-  const { activePage, navigateTo, currentUser, hasPermission, approvals } = useApp();
+export const Sidebar: React.FC<{ isMobileOpen?: boolean; onCloseMobile?: () => void }> = ({ 
+  isMobileOpen, 
+  onCloseMobile 
+}) => {
+  const { activePage, navigateTo, canViewPage, currentUser, approvals, tasks } = useApp();
 
-  const pendingApprovalsCount = approvals.filter(a => a.status === 'Pending').length;
+  // Pending counts for badges
+  const pendingApprovalsCount = approvals.filter(a => a.status === 'Awaiting Review').length;
+  const activeTasksCount = tasks.filter(t => t.status !== 'Approved' && t.status !== 'Rejected').length;
 
-  const mainNavItems: MenuItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: 'workbench', label: 'AI Workbench', icon: <MessageSquareCode className="w-4 h-4 text-cyan-400" /> },
-    { id: 'documents', label: 'Documents', icon: <FileText className="w-4 h-4" /> },
-    { id: 'image-analysis', label: 'Image Analysis', icon: <Camera className="w-4 h-4" /> },
-    { id: 'investigations', label: 'Investigations', icon: <Activity className="w-4 h-4" /> },
-    { id: 'sensor-data', label: 'Sensor Data', icon: <Cpu className="w-4 h-4" /> },
-    { id: 'approvals', label: 'Approvals', icon: <CheckSquare className="w-4 h-4" />, badge: pendingApprovalsCount > 0 ? pendingApprovalsCount : undefined },
-    { id: 'reports', label: 'Reports', icon: <BarChart3 className="w-4 h-4" /> },
+  // 1. User Workbench Items (filtered dynamically by canViewPage)
+  const userWorkbenchItems: NavItem[] = [
+    {
+      id: 'workbench',
+      label: 'AI Task Composer',
+      icon: <Bot className="w-4 h-4" />,
+      moduleKey: 'workbench'
+    },
+    {
+      id: 'tasks',
+      label: 'My Industrial Tasks',
+      icon: <CheckSquare className="w-4 h-4" />,
+      badge: activeTasksCount,
+      badgeColor: 'bg-blue-100 text-blue-700',
+      moduleKey: 'workbench'
+    },
+    {
+      id: 'documents',
+      label: 'Document Repository',
+      icon: <FileText className="w-4 h-4" />,
+      moduleKey: 'documents'
+    },
+    {
+      id: 'knowledge',
+      label: 'SOP & Standards Base',
+      icon: <BookOpen className="w-4 h-4" />,
+      moduleKey: 'knowledge'
+    },
+    {
+      id: 'approvals',
+      label: 'Approval & Sign-Off',
+      icon: <ClipboardCheck className="w-4 h-4" />,
+      badge: pendingApprovalsCount > 0 ? pendingApprovalsCount : undefined,
+      badgeColor: 'bg-amber-100 text-amber-800 font-bold',
+      moduleKey: 'approvals'
+    },
+    {
+      id: 'reviews',
+      label: 'P&ID & SOP Review',
+      icon: <Sliders className="w-4 h-4" />,
+      moduleKey: 'reviews'
+    },
+    {
+      id: 'code-sandbox',
+      label: 'Code Agent & Sandbox',
+      icon: <Terminal className="w-4 h-4" />,
+      moduleKey: 'code-sandbox'
+    },
+    {
+      id: 'audit-history',
+      label: 'My Audit History',
+      icon: <History className="w-4 h-4" />,
+      moduleKey: 'workbench'
+    }
   ];
 
-  const adminNavItems: MenuItem[] = [
-    { id: 'users', label: 'Users', icon: <Users className="w-4 h-4" />, adminOnly: true },
-    { id: 'roles-departments', label: 'Roles & Departments', icon: <Network className="w-4 h-4" />, adminOnly: true },
-    { id: 'models', label: 'AI Models', icon: <Sparkles className="w-4 h-4" />, adminOnly: true },
-    { id: 'agents', label: 'Agents', icon: <Bot className="w-4 h-4" />, adminOnly: true },
-    { id: 'tools', label: 'Tools', icon: <Wrench className="w-4 h-4" />, adminOnly: true },
-    { id: 'policies', label: 'AI Policy Engine', icon: <Sliders className="w-4 h-4 text-amber-400" />, adminOnly: true },
-    { id: 'knowledge-base', label: 'Knowledge Base', icon: <Database className="w-4 h-4" />, adminOnly: true },
-    { id: 'audit-logs', label: 'Audit Logs', icon: <FileSpreadsheet className="w-4 h-4 text-emerald-400" />, adminOnly: true },
-    { id: 'security', label: 'Security Center', icon: <Lock className="w-4 h-4 text-rose-400" />, adminOnly: true },
-    { id: 'architecture', label: 'System Architecture', icon: <Layers className="w-4 h-4 text-cyan-300" /> },
-    { id: 'prompt-injection', label: 'Prompt Injection Demo', icon: <Bug className="w-4 h-4 text-purple-400" /> },
+  // 2. Admin Control Center Items (Only rendered if user has admin permissions)
+  const adminCenterItems: NavItem[] = [
+    {
+      id: 'admin-security',
+      label: 'CISO Security Dashboard',
+      icon: <ShieldAlert className="w-4 h-4 text-rose-600" />,
+      moduleKey: 'admin-security'
+    },
+    {
+      id: 'admin-roles',
+      label: 'Roles & Permissions',
+      icon: <Users className="w-4 h-4" />,
+      moduleKey: 'admin-roles'
+    },
+    {
+      id: 'admin-firewall',
+      label: 'AI Capability Firewall',
+      icon: <Lock className="w-4 h-4 text-blue-600" />,
+      moduleKey: 'admin-firewall'
+    },
+    {
+      id: 'admin-models',
+      label: 'Local Model Registry',
+      icon: <Cpu className="w-4 h-4" />,
+      moduleKey: 'admin-models'
+    },
+    {
+      id: 'admin-network',
+      label: 'Network Sovereignty',
+      icon: <Network className="w-4 h-4" />,
+      moduleKey: 'admin-network'
+    },
+    {
+      id: 'admin-audit',
+      label: 'Global Forensic Audit',
+      icon: <Database className="w-4 h-4" />,
+      moduleKey: 'admin-audit'
+    }
   ];
 
-  const renderNavGroup = (title: string, items: MenuItem[]) => (
-    <div className="mb-6">
-      <div className="px-3 mb-2 text-[10px] font-mono uppercase font-bold tracking-widest text-slate-500 flex items-center justify-between">
-        <span>{title}</span>
-      </div>
-      <div className="space-y-1">
-        {items.map(item => {
-          const isAllowed = currentUser ? hasPermission(currentUser.role, item.id) : false;
-          const isActive = activePage === item.id;
-
-          return (
-            <button
-              key={item.id}
-              onClick={() => {
-                navigateTo(item.id);
-                onCloseMobile();
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all group ${
-                isActive
-                  ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-sm font-semibold'
-                  : isAllowed
-                  ? 'text-slate-400 hover:text-white hover:bg-slate-900/80'
-                  : 'text-slate-600 hover:text-slate-400 hover:bg-slate-900/40 opacity-70'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className={`transition-colors ${isActive ? 'text-cyan-400' : 'text-slate-400 group-hover:text-slate-200'}`}>
-                  {item.icon}
-                </span>
-                <span>{item.label}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {!isAllowed && (
-                  <Lock className="w-3 h-3 text-slate-600 group-hover:text-rose-400 transition-colors" />
-                )}
-                {item.badge !== undefined && (
-                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                    isActive 
-                      ? 'bg-cyan-400 text-slate-950' 
-                      : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  const sidebarContent = (
-    <div className="h-full flex flex-col justify-between p-4 overflow-y-auto">
-      <div>
-        {/* Brand Header */}
-        <div className="flex items-center justify-between px-2 py-3 mb-6 border-b border-slate-800/80">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg glow-cyan">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold tracking-tight text-white font-mono leading-none">
-                SOVEREIGNFORGE
-              </h2>
-              <span className="text-[10px] text-cyan-400 font-mono tracking-wider uppercase">
-                AI WORKBENCH
-              </span>
-            </div>
-          </div>
-          {/* Mobile close button */}
-          <button 
-            onClick={onCloseMobile}
-            className="lg:hidden p-1.5 rounded-lg bg-slate-900 text-slate-400 hover:text-white"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Navigation Groups */}
-        {renderNavGroup('Core Product', mainNavItems)}
-        {renderNavGroup('Control & Governance', adminNavItems)}
-      </div>
-
-      {/* Footer System Status Info */}
-      <div className="mt-auto pt-4 border-t border-slate-800/80 text-xs">
-        <div className="bg-slate-900/90 rounded-xl p-3 border border-slate-800">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono font-bold uppercase text-slate-400">Node Status</span>
-            <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> ONLINE
-            </span>
-          </div>
-          <p className="text-[11px] text-slate-400 leading-tight">
-            Air-Gapped Sovereign Cluster v2.4 • Zero External Leakage
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+  // Filter items strictly based on role authorization
+  const visibleWorkbenchItems = userWorkbenchItems.filter(item => canViewPage(item.id));
+  const visibleAdminItems = adminCenterItems.filter(item => canViewPage(item.id));
 
   return (
-    <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-64 shrink-0 bg-slate-950/95 border-r border-slate-800/80 min-h-screen">
-        {sidebarContent}
-      </aside>
+    <aside className={`
+      w-60 bg-white border-r border-slate-200/90 flex flex-col justify-between flex-shrink-0 z-20 select-none
+      lg:static fixed inset-y-0 left-0 transition-transform duration-200
+      ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+    `}>
+      
+      {/* Scrollable Navigation Items */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-5">
+        
+        {/* Section A: User Workbench */}
+        <div>
+          <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            USER WORKBENCH
+          </div>
+          <div className="space-y-0.5">
+            {visibleWorkbenchItems.map((item) => {
+              const isActive = activePage === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    navigateTo(item.id);
+                    if (onCloseMobile) onCloseMobile();
+                  }}
+                  className={`
+                    w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                    ${isActive 
+                      ? 'bg-blue-600 text-white shadow-xs font-bold' 
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'}
+                  `}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className={isActive ? 'text-white' : 'text-slate-500'}>
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                  </div>
 
-      {/* Mobile Drawer Backdrop */}
-      {isMobileOpen && (
-        <div 
-          onClick={onCloseMobile} 
-          className="lg:hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-sm animate-fade-in"
-        />
-      )}
+                  {item.badge !== undefined && (
+                    <span className={`px-2 py-0.5 text-[10px] rounded-full font-bold ${
+                      isActive ? 'bg-white/20 text-white' : item.badgeColor || 'bg-slate-100 text-slate-700'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-      {/* Mobile Drawer */}
-      <div className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-slate-950 border-r border-slate-800 shadow-2xl transition-transform duration-300 ease-in-out ${
-        isMobileOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        {sidebarContent}
+        {/* Section B: Admin Control Center */}
+        {visibleAdminItems.length > 0 && (
+          <div className="pt-2 border-t border-slate-100">
+            <div className="px-3 pb-2 flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                ADMIN CONTROL CENTER
+              </span>
+              <span className="text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-100">
+                CISO
+              </span>
+            </div>
+            <div className="space-y-0.5">
+              {visibleAdminItems.map((item) => {
+                const isActive = activePage === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      navigateTo(item.id);
+                      if (onCloseMobile) onCloseMobile();
+                    }}
+                    className={`
+                      w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                      ${isActive 
+                        ? 'bg-blue-600 text-white shadow-xs font-bold' 
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'}
+                    `}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className={isActive ? 'text-white' : 'text-slate-500'}>
+                        {item.icon}
+                      </span>
+                      <span>{item.label}</span>
+                    </div>
+
+                    <ChevronRight className={`w-3.5 h-3.5 opacity-40 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
       </div>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-950/95 border-t border-slate-800/80 px-2 py-2 flex items-center justify-around backdrop-blur-md">
-        <button
-          onClick={() => navigateTo('workbench')}
-          className={`flex flex-col items-center gap-1 p-1.5 rounded-lg text-[10px] font-medium ${
-            activePage === 'workbench' ? 'text-cyan-400 font-bold' : 'text-slate-400'
-          }`}
-        >
-          <MessageSquareCode className="w-4 h-4" />
-          <span>Workbench</span>
-        </button>
+      {/* Bottom Air-Gap Hardware Security Widget */}
+      <div className="p-3 border-t border-slate-200/80 bg-slate-50/70">
+        <div className="p-2.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-green"></span>
+              <span className="text-[10px] font-bold text-slate-900">AIR-GAP ACTIVE</span>
+            </div>
+            <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+              0 EGRESS
+            </span>
+          </div>
+          <div className="mt-1.5 text-[9px] text-slate-500 space-y-0.5 font-mono">
+            <div className="flex justify-between">
+              <span>Egress Sockets:</span>
+              <strong className="text-slate-800">BLOCKED</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>Model Weights:</span>
+              <strong className="text-emerald-700">Verified Local</strong>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <button
-          onClick={() => navigateTo('documents')}
-          className={`flex flex-col items-center gap-1 p-1.5 rounded-lg text-[10px] font-medium ${
-            activePage === 'documents' ? 'text-cyan-400 font-bold' : 'text-slate-400'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>Documents</span>
-        </button>
-
-        <button
-          onClick={() => navigateTo('approvals')}
-          className={`flex flex-col items-center gap-1 p-1.5 rounded-lg text-[10px] font-medium relative ${
-            activePage === 'approvals' ? 'text-cyan-400 font-bold' : 'text-slate-400'
-          }`}
-        >
-          <CheckSquare className="w-4 h-4" />
-          <span>Approvals</span>
-          {pendingApprovalsCount > 0 && (
-            <span className="absolute top-0 right-2 w-2 h-2 rounded-full bg-amber-400"></span>
-          )}
-        </button>
-
-        <button
-          onClick={() => navigateTo(currentUser?.role === 'Administrator' ? 'dashboard' : 'policies')}
-          className={`flex flex-col items-center gap-1 p-1.5 rounded-lg text-[10px] font-medium ${
-            activePage === 'dashboard' || activePage === 'policies' ? 'text-cyan-400 font-bold' : 'text-slate-400'
-          }`}
-        >
-          <Sliders className="w-4 h-4" />
-          <span>Control</span>
-        </button>
-      </nav>
-    </>
+    </aside>
   );
 };

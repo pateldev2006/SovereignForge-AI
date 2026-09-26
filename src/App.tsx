@@ -3,27 +3,30 @@ import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { Toast } from './components/common/Toast';
+import { SourceViewerDrawer } from './components/common/SourceViewerDrawer';
+import { SovereigntyMonitorModal } from './components/common/SovereigntyMonitorModal';
+import { JudgeDemoTour } from './components/common/JudgeDemoTour';
 
-import { Login } from './components/pages/Login';
-import { Dashboard } from './components/pages/Dashboard';
+// Pages
 import { AIWorkbench } from './components/pages/AIWorkbench';
+import { Tasks } from './components/pages/Tasks';
 import { Documents } from './components/pages/Documents';
-import { ImageAnalysis } from './components/pages/ImageAnalysis';
-import { Investigations } from './components/pages/Investigations';
+import { KnowledgeBase } from './components/pages/KnowledgeBase';
 import { Approvals } from './components/pages/Approvals';
-import { PolicyEngine } from './components/pages/PolicyEngine';
-import { ModelGovernance } from './components/pages/ModelGovernance';
+import { Reviews } from './components/pages/Reviews';
+import { CodeSandbox } from './components/pages/CodeSandbox';
 import { AuditLogs } from './components/pages/AuditLogs';
+import { Overview } from './components/pages/Overview';
+import { RolePermissionMatrix } from './components/pages/RolePermissionMatrix';
+import { AICapabilityFirewall } from './components/pages/AICapabilityFirewall';
+import { ModelRegistry } from './components/pages/ModelRegistry';
+import { Policies } from './components/pages/Policies';
 import { SecurityCenter } from './components/pages/SecurityCenter';
-import { ArchitectureVis } from './components/pages/ArchitectureVis';
-import { PromptInjectionDemo } from './components/pages/PromptInjectionDemo';
-import { SensorData } from './components/pages/SensorData';
-import { Reports } from './components/pages/Reports';
-import { GenericAdminPage } from './components/pages/GenericAdminPage';
-import { Users, Network, Bot, Wrench, Database } from 'lucide-react';
+import { NetworkPage } from './components/pages/NetworkPage';
+import { Login } from './components/pages/Login';
 
 const MainLayout: React.FC = () => {
-  const { currentUser, activePage, isInternetSimulatedOffline } = useApp();
+  const { activePage, currentUser, canViewPage } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (!currentUser) {
@@ -31,114 +34,74 @@ const MainLayout: React.FC = () => {
   }
 
   const renderContent = () => {
+    // If the active page is unauthorized for the current user, fallback to authorized workbench
+    if (!canViewPage(activePage)) {
+      return <AIWorkbench />;
+    }
+
     switch (activePage) {
-      case 'dashboard':
-        return <Dashboard />;
       case 'workbench':
         return <AIWorkbench />;
+      case 'tasks':
+        return <Tasks />;
       case 'documents':
         return <Documents />;
-      case 'image-analysis':
-        return <ImageAnalysis />;
-      case 'investigations':
-        return <Investigations />;
-      case 'sensor-data':
-        return <SensorData />;
+      case 'knowledge':
+        return <KnowledgeBase />;
       case 'approvals':
         return <Approvals />;
-      case 'reports':
-        return <Reports />;
-      case 'policies':
-        return <PolicyEngine />;
-      case 'models':
-        return <ModelGovernance />;
-      case 'audit-logs':
+      case 'reviews':
+        return <Reviews />;
+      case 'code-sandbox':
+        return <CodeSandbox />;
+      case 'audit-history':
         return <AuditLogs />;
-      case 'security':
+      case 'admin-overview':
+        return <Overview />;
+      case 'admin-roles':
+        return <RolePermissionMatrix />;
+      case 'admin-firewall':
+        return <AICapabilityFirewall />;
+      case 'admin-models':
+        return <ModelRegistry />;
+      case 'admin-policies':
+        return <Policies />;
+      case 'admin-security':
         return <SecurityCenter />;
-      case 'architecture':
-        return <ArchitectureVis />;
-      case 'prompt-injection':
-        return <PromptInjectionDemo />;
-      case 'users':
-        return (
-          <GenericAdminPage 
-            pageId="users" 
-            title="User Management & RBAC Identities" 
-            subtitle="Configure active user accounts, MFA parameters, and department assignments." 
-            icon={<Users className="w-4 h-4" />} 
-          />
-        );
-      case 'roles-departments':
-        return (
-          <GenericAdminPage 
-            pageId="roles-departments" 
-            title="Roles & Departments Governance" 
-            subtitle="Define permissions matrices for Engineer, Manager, Maintenance, and Admin roles." 
-            icon={<Network className="w-4 h-4" />} 
-          />
-        );
-      case 'agents':
-        return (
-          <GenericAdminPage 
-            pageId="agents" 
-            title="Autonomous Agents Registry" 
-            subtitle="Register retrieval, inspection, and verification agent nodes." 
-            icon={<Bot className="w-4 h-4" />} 
-          />
-        );
-      case 'tools':
-        return (
-          <GenericAdminPage 
-            pageId="tools" 
-            title="Agent Tool Authorization" 
-            subtitle="Grant or revoke tool access to vector search, vision inference, and sensor logs." 
-            icon={<Wrench className="w-4 h-4" />} 
-          />
-        );
-      case 'knowledge-base':
-        return (
-          <GenericAdminPage 
-            pageId="knowledge-base" 
-            title="RAG Knowledge Vector Index" 
-            subtitle="Inspect vector index chunking, dense embeddings, and document graph." 
-            icon={<Database className="w-4 h-4" />} 
-          />
-        );
+      case 'admin-network':
+        return <NetworkPage />;
+      case 'admin-audit':
+        return <AuditLogs />;
       default:
         return <AIWorkbench />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
       
-      {/* Offline Mode Alert Banner */}
-      {isInternetSimulatedOffline && (
-        <div className="bg-amber-500/20 border-b border-amber-500/40 px-4 py-2 text-center text-xs font-mono font-bold text-amber-300 flex items-center justify-center gap-2">
-          <span>🟠 AIR-GAPPED OFFLINE MODE:</span>
-          <span className="font-normal">Core SovereignForge workflows remain available without internet connectivity.</span>
-        </div>
-      )}
+      {/* Top Header */}
+      <Header onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
 
+      {/* Main App Body with Sidebar & Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Responsive Sidebar */}
+        {/* Dynamic RBAC-Filtered Sidebar */}
         <Sidebar 
           isMobileOpen={isMobileMenuOpen} 
           onCloseMobile={() => setIsMobileMenuOpen(false)} 
         />
 
-        {/* Main Content Body */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto pb-16 lg:pb-0">
-          <Header onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
-          
-          <main className="flex-1">
-            {renderContent()}
-          </main>
-        </div>
+        {/* Scrollable Main Content Area */}
+        <main className="flex-1 overflow-y-auto min-w-0 bg-[#F8FAFC]">
+          {renderContent()}
+        </main>
       </div>
 
+      {/* Global Modals & Notifications */}
       <Toast />
+      <SourceViewerDrawer />
+      <SovereigntyMonitorModal />
+      <JudgeDemoTour />
     </div>
   );
 };

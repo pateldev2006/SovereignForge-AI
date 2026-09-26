@@ -1,212 +1,270 @@
 import React, { useState } from 'react';
-import { useApp } from '../../context/AppContext';
-import { 
-  ShieldCheck, Wifi, WifiOff, Bell, Search, LogOut, 
-  Menu, User as UserIcon, ChevronDown, Check, ShieldAlert
-} from 'lucide-react';
+import { useApp, SystemStatusMode } from '../../context/AppContext';
 import { UserRole } from '../../types';
+import { 
+  ShieldCheck, Lock, ChevronDown, Sparkles, Check, 
+  HelpCircle, Menu
+} from 'lucide-react';
+import { DEMO_USERS } from '../../data/mockData';
 
-interface HeaderProps {
-  onToggleMobileMenu: () => void;
-}
-
-export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
+export const Header: React.FC<{ onToggleMobileMenu?: () => void }> = ({ onToggleMobileMenu }) => {
   const { 
     currentUser, 
-    logout, 
-    switchUserRole, 
-    isInternetSimulatedOffline, 
-    toggleInternetDisconnection,
-    securityAlerts
+    switchUser, 
+    systemMode, 
+    setSystemMode, 
+    setIsSovereigntyModalOpen,
+    startDemoTour,
+    activePage
   } = useApp();
 
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
-  const [showAlertsMenu, setShowAlertsMenu] = useState(false);
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
 
-  const roles: UserRole[] = ['Administrator', 'Engineer', 'Manager', 'Maintenance', 'Operations', 'Safety'];
+  const statusConfig: Record<SystemStatusMode, { label: string; dot: string; badge: string; desc: string }> = {
+    FULL: {
+      label: 'Operational',
+      dot: 'bg-emerald-500',
+      badge: 'bg-emerald-50/80 text-emerald-700 border-emerald-200/80 hover:bg-emerald-100/60',
+      desc: 'All on-premise AI models & vector pipelines operational'
+    },
+    DEGRADED: {
+      label: 'Degraded',
+      dot: 'bg-amber-500',
+      badge: 'bg-amber-50/80 text-amber-700 border-amber-200/80 hover:bg-amber-100/60',
+      desc: 'Vision OCR degraded; text reasoning remains active'
+    },
+    SAFE: {
+      label: 'Safe Mode',
+      dot: 'bg-rose-500',
+      badge: 'bg-rose-50/80 text-rose-700 border-rose-200/80 hover:bg-rose-100/60',
+      desc: 'Read-only mode; automated tool execution locked'
+    },
+    OFFLINE: {
+      label: 'Air-Gap Offline',
+      dot: 'bg-slate-500',
+      badge: 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200/60',
+      desc: 'AI generation offline; static documents accessible'
+    }
+  };
 
-  const unresolvedAlerts = securityAlerts.filter(a => !a.resolved);
+  const getPageTitle = () => {
+    switch (activePage) {
+      case 'workbench': return 'AI Task Composer';
+      case 'tasks': return 'My Tasks';
+      case 'documents': return 'Document Repository';
+      case 'knowledge': return 'SOP Knowledge Base';
+      case 'approvals': return 'Approval & Sign-Off';
+      case 'reviews': return 'P&ID & SOP Review';
+      case 'code-sandbox': return 'Code Sandbox';
+      case 'audit-history': return 'Audit History';
+      case 'admin-overview': return 'Control Center Overview';
+      case 'admin-roles': return 'Roles & Permissions';
+      case 'admin-firewall': return 'AI Capability Firewall';
+      case 'admin-models': return 'Local Model Registry';
+      case 'admin-policies': return 'Security Policies';
+      case 'admin-security': return 'CISO Security Dashboard';
+      case 'admin-network': return 'Network Sovereignty';
+      case 'admin-audit': return 'Forensic Audit Ledger';
+      default: return 'SovereignForge AI';
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-      {/* Left: Mobile hamburger & Sovereign Mode Indicator */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onToggleMobileMenu}
-          className="lg:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition-colors"
-          aria-label="Toggle menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+    <header className="bg-white border-b border-slate-200/90 sticky top-0 z-30 shadow-xs">
+      <div className="px-4 lg:px-6 h-15 flex items-center justify-between gap-4">
+        
+        {/* Left: Brand Identity & Location */}
+        <div className="flex items-center gap-3">
+          {onToggleMobileMenu && (
+            <button 
+              onClick={onToggleMobileMenu}
+              className="lg:hidden p-1.5 rounded-lg text-slate-600 hover:bg-slate-100"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
 
-        {/* Sovereign Mode Banner */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
+              <ShieldCheck className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-slate-900 tracking-tight text-sm leading-none">
+                  SOVEREIGNFORGE<span className="text-blue-600">.AI</span>
+                </span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200/80 px-1 py-0.2 rounded leading-none">
+                  MRPL
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
+                Mangalore Refinery & Petrochemicals Ltd.
+              </p>
+            </div>
+          </div>
+
+          <div className="hidden md:block h-5 w-px bg-slate-200 mx-1"></div>
+
+          {/* Breadcrumb Context */}
+          <div className="hidden lg:flex items-center gap-1.5 text-xs">
+            <span className="text-slate-400">Workspace:</span>
+            <span className="font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/70 text-[11px]">
+              CDU-03 Complex
+            </span>
+            <span className="text-slate-300">/</span>
+            <span className="font-semibold text-blue-600 text-[11px]">
+              {getPageTitle()}
+            </span>
+          </div>
+        </div>
+
+        {/* Right: Controls & Profile */}
         <div className="flex items-center gap-2">
-          {!isInternetSimulatedOffline ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold font-mono glow-emerald">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <ShieldCheck className="w-3.5 h-3.5 hidden sm:inline" />
-              <span>SOVEREIGN MODE ACTIVE</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold font-mono">
-              <WifiOff className="w-3.5 h-3.5" />
-              <span>OFFLINE MODE (AIR-GAPPED)</span>
-            </div>
-          )}
-
-          {/* Toggle Internet Disconnection */}
+          
+          {/* 1. Persistent Sovereignty Status Pill */}
           <button
-            onClick={toggleInternetDisconnection}
-            className="text-xs px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-slate-300 transition-all flex items-center gap-1.5"
-            title="Simulate network isolation"
+            onClick={() => setIsSovereigntyModalOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50/90 hover:bg-emerald-100/90 border border-emerald-200 text-emerald-800 text-xs font-bold transition-all shadow-2xs group"
+            title="Click to view detailed Air-Gap & Network Telemetry"
           >
-            {isInternetSimulatedOffline ? (
-              <>
-                <Wifi className="w-3 h-3 text-emerald-400" />
-                <span className="hidden md:inline">Connect Link</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="w-3 h-3 text-amber-400" />
-                <span className="hidden md:inline">Simulate Air-Gap</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Center: Quick Search (Desktop) */}
-      <div className="hidden md:flex flex-1 max-w-md mx-4">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-          <input
-            type="text"
-            placeholder="Search confidential documents, pumps, SOPs..."
-            className="w-full bg-slate-900/90 border border-slate-800 rounded-xl pl-9 pr-4 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
-          />
-        </div>
-      </div>
-
-      {/* Right: Security Notifications & User Info */}
-      <div className="flex items-center gap-3">
-        {/* Alerts Bell */}
-        <div className="relative">
-          <button
-            onClick={() => setShowAlertsMenu(!showAlertsMenu)}
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-colors relative"
-          >
-            <Bell className="w-4 h-4" />
-            {unresolvedAlerts.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
-                {unresolvedAlerts.length}
-              </span>
-            )}
+            <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-green"></span>
+            <span className="hidden xl:inline text-[11px] tracking-tight">ZERO OUTBOUND CONNECTIONS</span>
+            <span className="xl:hidden text-[11px] font-mono">AIR-GAP</span>
+            <Lock className="w-3.5 h-3.5 text-emerald-600 group-hover:scale-110 transition-transform ml-0.5" />
           </button>
 
-          {/* Alerts Dropdown */}
-          {showAlertsMenu && (
-            <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-4 z-50 animate-scale-in">
-              <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
-                <h4 className="text-xs font-mono uppercase font-bold text-slate-300 flex items-center gap-1.5">
-                  <ShieldAlert className="w-4 h-4 text-rose-400" /> Security Alerts ({securityAlerts.length})
-                </h4>
-              </div>
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {securityAlerts.map(alert => (
-                  <div key={alert.id} className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-bold ${
-                        alert.severity === 'High' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
-                        alert.severity === 'Medium' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                        'bg-blue-500/20 text-blue-400'
-                      }`}>
-                        {alert.severity}
-                      </span>
-                      <span className="text-[10px] text-slate-500">{alert.timestamp}</span>
-                    </div>
-                    <h5 className="font-semibold text-white mb-0.5">{alert.title}</h5>
-                    <p className="text-slate-400 text-[11px] leading-tight">{alert.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* User Profile & Role Switcher */}
-        {currentUser ? (
+          {/* 2. System Status Mode Badge (Dropdown) */}
           <div className="relative">
             <button
-              onClick={() => setShowRoleMenu(!showRoleMenu)}
-              className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors text-left"
+              onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${statusConfig[systemMode].badge}`}
+              title="System Operating Mode"
             >
-              <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 flex items-center justify-center text-xs font-bold font-mono">
-                {currentUser.name.charAt(0)}
-              </div>
-              <div className="hidden sm:block">
-                <div className="text-xs font-semibold text-white leading-tight flex items-center gap-1">
-                  {currentUser.name}
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
-                </div>
-                <div className="text-[10px] text-cyan-400 font-mono flex items-center gap-1">
-                  <span>{currentUser.role}</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                </div>
-              </div>
+              <span className={`w-2 h-2 rounded-full ${statusConfig[systemMode].dot}`}></span>
+              <span className="text-[11px] font-bold">{statusConfig[systemMode].label}</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
 
-            {/* Role Switcher Menu */}
-            {showRoleMenu && (
-              <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-3 z-50">
-                <div className="p-2 border-b border-slate-800 mb-2">
-                  <div className="text-xs font-semibold text-white">{currentUser.name}</div>
-                  <div className="text-[11px] text-slate-400">{currentUser.email}</div>
-                  <div className="text-[10px] text-slate-500 font-mono mt-1">{currentUser.department}</div>
+            {isStatusDropdownOpen && (
+              <div 
+                className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 p-2 z-50 animate-in fade-in zoom-in-95"
+                onMouseLeave={() => setIsStatusDropdownOpen(false)}
+              >
+                <div className="px-3 py-2 border-b border-slate-100">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">System Operating Mode</span>
+                  <p className="text-xs text-slate-600 mt-0.5">Control on-premise AI failover states</p>
                 </div>
-
-                <div className="text-[10px] font-mono uppercase text-slate-500 px-2 mb-1 font-bold">
-                  Switch Active Role (RBAC Demo)
-                </div>
-
-                <div className="space-y-1 mb-2">
-                  {roles.map(r => (
+                {(Object.keys(statusConfig) as SystemStatusMode[]).map((modeKey) => {
+                  const cfg = statusConfig[modeKey];
+                  return (
                     <button
-                      key={r}
+                      key={modeKey}
                       onClick={() => {
-                        switchUserRole(r);
-                        setShowRoleMenu(false);
+                        setSystemMode(modeKey);
+                        setIsStatusDropdownOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
-                        currentUser.role === r 
-                          ? 'bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30' 
-                          : 'text-slate-300 hover:bg-slate-800'
+                      className={`w-full text-left p-2.5 rounded-lg flex items-start gap-2.5 text-xs transition-colors ${
+                        systemMode === modeKey ? 'bg-slate-100 font-bold text-slate-900' : 'hover:bg-slate-50 text-slate-700'
                       }`}
                     >
-                      <span>{r}</span>
-                      {currentUser.role === r && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                      <span className={`w-2.5 h-2.5 rounded-full mt-0.5 ${cfg.dot} flex-shrink-0`}></span>
+                      <div>
+                        <span className="font-bold block text-xs">{cfg.label}</span>
+                        <span className="text-[11px] text-slate-500 font-normal leading-tight block">{cfg.desc}</span>
+                      </div>
                     </button>
-                  ))}
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* 3. Demo Mode Badge */}
+          <div 
+            className="hidden 2xl:flex items-center gap-1 px-2 py-1 rounded bg-slate-100/90 border border-slate-200 text-slate-600 text-[10px] font-mono font-semibold"
+            title="Prototype environment using simulated industrial data and telemetry."
+          >
+            <span>DEMO MODE</span>
+            <HelpCircle className="w-3 h-3 text-slate-400" />
+          </div>
+
+          {/* 4. Guided Judge Demo Tour Launcher */}
+          <button
+            onClick={startDemoTour}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs"
+            title="Launch step-by-step 3-minute evaluation walkthrough"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="text-[11px]">Judge Demo Tour</span>
+          </button>
+
+          {/* 5. Demo Role Switcher Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+              className="flex items-center gap-2 p-1 pl-2 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200 transition-colors"
+            >
+              <div className="w-6.5 h-6.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center">
+                {currentUser.avatar || 'U'}
+              </div>
+              <div className="text-left hidden sm:block pr-1">
+                <span className="font-bold text-slate-900 text-xs block leading-tight">{currentUser.name}</span>
+                <span className="text-[10px] text-slate-500 font-medium block leading-none">{currentUser.roleTitle.split('—')[0].trim()}</span>
+              </div>
+              <ChevronDown className="w-3 h-3 text-slate-400" />
+            </button>
+
+            {isRoleDropdownOpen && (
+              <div 
+                className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3 z-50 animate-in fade-in zoom-in-95"
+                onMouseLeave={() => setIsRoleDropdownOpen(false)}
+              >
+                <div className="px-3 py-2 border-b border-slate-100">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 block">DEMO ROLE SWITCHER</span>
+                  <p className="text-xs text-slate-500 mt-0.5">Switch role to observe dynamic UI & RBAC adaptation</p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800">
-                  <button
-                    onClick={logout}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 transition-colors font-medium"
-                  >
-                    <LogOut className="w-3.5 h-3.5" /> Log Out Session
-                  </button>
+                <div className="py-2 space-y-1">
+                  {DEMO_USERS.map((user) => {
+                    const isSelected = currentUser.role === user.role;
+                    return (
+                      <button
+                        key={user.id}
+                        onClick={() => {
+                          switchUser(user.role);
+                          setIsRoleDropdownOpen(false);
+                        }}
+                        className={`w-full text-left p-2.5 rounded-xl flex items-start gap-3 transition-colors ${
+                          isSelected ? 'bg-blue-50 border border-blue-200' : 'hover:bg-slate-50 border border-transparent'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-200'
+                        }`}>
+                          {user.avatar}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-slate-900 truncate">{user.name}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                          </div>
+                          <span className="text-[11px] font-semibold text-blue-700 block mt-0.2">{user.roleTitle}</span>
+                          <span className="text-[10px] text-slate-500 block truncate">{user.department}</span>
+                          <span className="text-[9px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.2 rounded mt-1 inline-block">
+                            {user.clearanceLevel}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
-        ) : (
-          <button
-            onClick={() => switchUserRole('Administrator')}
-            className="px-4 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-xs transition-all shadow-md"
-          >
-            Log In
-          </button>
-        )}
+
+        </div>
+
       </div>
     </header>
   );

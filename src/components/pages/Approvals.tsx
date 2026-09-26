@@ -1,186 +1,330 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { ApprovalQueueItem } from '../../types';
 import { 
-  CheckSquare, ShieldAlert, Check, X, HelpCircle, FileText, UserCheck, Clock, CheckCircle2
+  CheckCircle2, AlertTriangle, 
+  FileText, ShieldCheck, Eye, Check, X, Edit3, Download, Clock
 } from 'lucide-react';
+import { downloadApprovalNotePDF } from '../../utils/exportUtils';
 
 export const Approvals: React.FC = () => {
-  const { approvals, handleApprovalAction, currentUser } = useApp();
-  const [filterStatus, setFilterStatus] = useState<string>('All');
-  const [reviewNote, setReviewNote] = useState<{ [key: string]: string }>({});
+  const { 
+    approvals, 
+    approveDeliverable, 
+    rejectDeliverable, 
+    requestChangesDeliverable,
+    openSourceViewer,
+    currentUser,
+    showToast 
+  } = useApp();
+
+  const [selectedApproval, setSelectedApproval] = useState<ApprovalQueueItem | null>(approvals[0] || null);
+  const [signatureInput, setSignatureInput] = useState<string>('SIG_RSA4096_DR_SHETTY_MRPL_EXEC');
+  const [reviewNotes, setReviewNotes] = useState<string>(
+    'Approved conditionally. The proposed 18-month overhaul deferral is strictly rejected per SOP-4.2.1. Maximum overhaul interval enforced at 12 months (September 2027).'
+  );
+  const [filterStatus, setFilterStatus] = useState<string>('ALL');
 
   const filteredApprovals = approvals.filter(item => {
-    if (filterStatus === 'All') return true;
+    if (filterStatus === 'ALL') return true;
     return item.status === filterStatus;
   });
 
+  const handleApprove = (id: string) => {
+    approveDeliverable(id, signatureInput, reviewNotes);
+    setSelectedApproval(null);
+  };
+
+  const handleReject = (id: string) => {
+    rejectDeliverable(id, reviewNotes || 'Rejected due to critical non-conformance with MRPL safety guidelines.');
+    setSelectedApproval(null);
+  };
+
+  const handleRequestChanges = (id: string) => {
+    requestChangesDeliverable(id, reviewNotes || 'Please revise the turnaround interval to comply with 12-month limit.');
+    setSelectedApproval(null);
+  };
+
+  const handleDownloadPDF = (deliverable: ApprovalQueueItem['deliverable']) => {
+    downloadApprovalNotePDF(deliverable, currentUser.name);
+    showToast(
+      'Exporting Technical Note PDF',
+      `Downloading signed deliverable ${deliverable.referenceNumber}.`,
+      'success'
+    );
+  };
+
+  const riskBadgeStyles: Record<string, string> = {
+    Low: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    Medium: 'bg-amber-50 text-amber-800 border-amber-200',
+    High: 'bg-rose-50 text-rose-800 border-rose-200',
+    Critical: 'bg-rose-100 text-rose-950 border-rose-300 font-bold'
+  };
+
+  const statusBadgeStyles: Record<string, string> = {
+    'Awaiting Review': 'bg-amber-50 text-amber-800 border-amber-200',
+    'Approved': 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    'Rejected': 'bg-rose-50 text-rose-800 border-rose-200',
+    'Needs Changes': 'bg-blue-50 text-blue-800 border-blue-200'
+  };
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto">
+    <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-150">
       
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 backdrop-blur">
+      {/* Page Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase text-cyan-400 mb-1">
-            <CheckSquare className="w-4 h-4" /> Human-in-the-Loop Governance
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+              GOVERNANCE & EXECUTIVE SIGN-OFF
+            </span>
+            <span className="text-xs text-slate-500 font-medium">
+              Human-in-the-Loop Approval Queue
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            AI Recommendation Approval Queue
+          <h1 className="text-2xl font-extrabold text-slate-900 mt-1 tracking-tight">
+            Industrial Deliverables Approval Queue
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Mandatory manager signoff for autonomous agent high-risk action execution.
+          <p className="text-xs text-slate-500 mt-0.5">
+            Review AI-synthesized technical notes, inspect SOP deviations, verify provenance, and apply cryptographic digital sign-off.
           </p>
         </div>
 
-        {/* Filter Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {['All', 'Pending', 'Approved', 'Rejected', 'Under Review'].map(st => (
+        {/* Filters */}
+        <div className="flex items-center gap-2">
+          {['ALL', 'Awaiting Review', 'Approved', 'Needs Changes'].map((status) => (
             <button
-              key={st}
-              onClick={() => setFilterStatus(st)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-semibold transition-all ${
-                filterStatus === st
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                  : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
+              key={status}
+              onClick={() => setFilterStatus(status)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                filterStatus === status 
+                  ? 'bg-blue-600 text-white shadow-xs' 
+                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              {st}
+              {status}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Approval Cards List */}
-      <div className="space-y-6">
-        {filteredApprovals.map(item => {
-          const isPending = item.status === 'Pending';
-
-          return (
-            <div 
-              key={item.id}
-              className={`bg-slate-900/90 border rounded-3xl p-6 shadow-2xl space-y-6 transition-all ${
-                item.status === 'Approved' ? 'border-emerald-500/40' :
-                item.status === 'Rejected' ? 'border-rose-500/40' :
-                item.status === 'Under Review' ? 'border-cyan-500/40' :
-                'border-slate-800'
-              }`}
-            >
-              {/* Card Header */}
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-800 pb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                      item.riskLevel === 'High' || item.riskLevel === 'Critical'
-                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    }`}>
-                      {item.riskLevel} Risk
-                    </span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                      item.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                      item.status === 'Rejected' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' :
-                      item.status === 'Under Review' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' :
-                      'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    }`}>
-                      STATUS: {item.status.toUpperCase()}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-white text-base sm:text-lg">{item.title}</h3>
-                </div>
-
-                <div className="text-left sm:text-right font-mono text-xs text-slate-400">
-                  <div>Confidence Score: <strong className="text-cyan-400">{item.confidence}%</strong></div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">{item.dateTime}</div>
-                </div>
-              </div>
-
-              {/* Recommendation Body */}
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                <span className="text-xs font-mono font-bold text-cyan-400 uppercase">
-                  Proposed AI Action Recommendation:
-                </span>
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-semibold">
-                  "{item.recommendation}"
-                </p>
-              </div>
-
-              {/* Supporting Evidence & Metadata Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div className="space-y-2">
-                  <span className="font-mono font-bold text-slate-400 uppercase text-[11px] flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-cyan-400" /> Supporting Evidence ({item.supportingEvidence.length})
-                  </span>
-                  <div className="space-y-1">
-                    {item.supportingEvidence.map((ev, i) => (
-                      <div key={i} className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 font-mono text-[11px]">
-                        • {ev}
+      {/* Main Approvals Table (Photo 3 Fix: Clean non-overlapping badge layout) */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs min-w-[920px]">
+            <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+              <tr>
+                <th className="p-4 min-w-[220px]">Document / Deliverable</th>
+                <th className="p-4 min-w-[130px]">Equipment Target</th>
+                <th className="p-4 min-w-[140px]">Requester & Dept</th>
+                <th className="p-4 min-w-[90px] whitespace-nowrap">Risk Level</th>
+                <th className="p-4 min-w-[140px] whitespace-nowrap">SOP Deviation</th>
+                <th className="p-4 min-w-[140px] whitespace-nowrap">Status</th>
+                <th className="p-4 text-right min-w-[110px] whitespace-nowrap">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 font-sans">
+              {filteredApprovals.map((item) => (
+                <tr 
+                  key={item.id} 
+                  className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${
+                    selectedApproval?.id === item.id ? 'bg-blue-50/40' : ''
+                  }`}
+                  onClick={() => setSelectedApproval(item)}
+                >
+                  <td className="p-4">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center flex-shrink-0 font-bold mt-0.5">
+                        <FileText className="w-4 h-4" />
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <span className="font-mono font-bold text-slate-400 uppercase text-[11px] flex items-center gap-1.5">
-                    <UserCheck className="w-3.5 h-3.5 text-cyan-400" /> Requestor & Governance Profile
-                  </span>
-                  <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Requesting User:</span>
-                      <span className="text-white font-semibold">{item.requestingUser}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Role:</span>
-                      <span className="text-cyan-300 font-mono">{item.requestingRole}</span>
-                    </div>
-                    {item.reviewedBy && (
-                      <div className="flex justify-between border-t border-slate-800 pt-1 text-emerald-400">
-                        <span>Reviewed By:</span>
-                        <span className="font-bold">{item.reviewedBy}</span>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-slate-900 text-xs leading-snug">{item.title}</h4>
+                        <span className="font-mono text-[10px] text-slate-500 block mt-0.5">{item.taskNumber} • {item.documentType}</span>
                       </div>
+                    </div>
+                  </td>
+
+                  <td className="p-4 font-semibold text-slate-800">
+                    {item.equipment}
+                  </td>
+
+                  <td className="p-4">
+                    <span className="font-bold text-slate-900 block leading-tight">{item.requester}</span>
+                    <span className="text-[10px] text-slate-500 font-medium">{item.department}</span>
+                  </td>
+
+                  <td className="p-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${riskBadgeStyles[item.riskLevel] || 'bg-slate-100'}`}>
+                      {item.riskLevel}
+                    </span>
+                  </td>
+
+                  <td className="p-4 whitespace-nowrap">
+                    {item.deviationDetected ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-900 border border-rose-200">
+                        <AlertTriangle className="w-3 h-3 text-rose-600 flex-shrink-0" />
+                        <span>Deviation Flagged</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                        <span>Compliant</span>
+                      </span>
                     )}
-                  </div>
-                </div>
+                  </td>
+
+                  <td className="p-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusBadgeStyles[item.status] || 'bg-slate-100'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Approved' ? 'bg-emerald-600' : item.status === 'Awaiting Review' ? 'bg-amber-600' : 'bg-rose-600'}`}></span>
+                      <span>{item.status}</span>
+                    </span>
+                  </td>
+
+                  <td className="p-4 text-right whitespace-nowrap">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedApproval(item);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
+                    >
+                      Inspect & Sign
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Selected Item Review & Sign-off Drawer/Modal */}
+      {selectedApproval && (
+        <div className="bg-white rounded-2xl border-2 border-blue-500/80 shadow-card p-6 space-y-5">
+          
+          <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-slate-200">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold text-blue-800 bg-blue-100/70 px-2 py-0.5 rounded border border-blue-200">
+                  {selectedApproval.deliverable.referenceNumber}
+                </span>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusBadgeStyles[selectedApproval.status]}`}>
+                  {selectedApproval.status}
+                </span>
+              </div>
+              <h2 className="text-base font-extrabold text-slate-900 mt-1">
+                {selectedApproval.deliverable.title}
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Submitted by {selectedApproval.requester} ({selectedApproval.requesterRole}) on {selectedApproval.submittedAt}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => openSourceViewer(1)}
+                className="px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Inspect Supporting Sources</span>
+              </button>
+
+              <button
+                onClick={() => handleDownloadPDF(selectedApproval.deliverable)}
+                className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export PDF</span>
+              </button>
+            </div>
+          </div>
+
+          {/* SOP Deviation Callout */}
+          {selectedApproval.deviationDetected && (
+            <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-xl space-y-1.5">
+              <div className="flex items-center gap-2 text-rose-900 font-bold text-xs">
+                <AlertTriangle className="w-4 h-4 text-rose-600" />
+                <span>MANDATORY SOP DEVIATION OVERRULE REQUIRED</span>
+              </div>
+              <p className="text-xs text-rose-950 leading-relaxed">
+                {selectedApproval.deviationSummary} SOP-4.2.1 mandates an inspection frequency of 12 months for sour crude service. Deferral to 18 months requires executive mitigation.
+              </p>
+            </div>
+          )}
+
+          {/* Executive Summary */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Executive Summary & Recommendation
+            </h4>
+            <p className="text-xs text-slate-800 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              {selectedApproval.deliverable.executiveSummary}
+            </p>
+          </div>
+
+          {/* Sign-off Form Controls */}
+          <div className="border-t border-slate-200 pt-4 space-y-3.5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
+              Approving Authority Digital Sign-Off Panel
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Digital RSA Signature / Approval Token
+                </label>
+                <input
+                  type="text"
+                  value={signatureInput}
+                  onChange={(e) => setSignatureInput(e.target.value)}
+                  className="w-full text-xs font-mono p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:border-blue-600"
+                />
               </div>
 
-              {/* Action Notes & Buttons */}
-              {isPending && (
-                <div className="pt-4 border-t border-slate-800 space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Optional review note (e.g. Approved for shift 2 overhaul window)..."
-                    value={reviewNote[item.id] || ''}
-                    onChange={e => setReviewNote({ ...reviewNote, [item.id]: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono"
-                  />
-
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      onClick={() => handleApprovalAction(item.id, 'Approved', reviewNote[item.id])}
-                      className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
-                    >
-                      <Check className="w-4 h-4" /> Approve Recommendation
-                    </button>
-
-                    <button
-                      onClick={() => handleApprovalAction(item.id, 'Rejected', reviewNote[item.id])}
-                      className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
-                    >
-                      <X className="w-4 h-4" /> Reject
-                    </button>
-
-                    <button
-                      onClick={() => handleApprovalAction(item.id, 'Under Review', reviewNote[item.id] || 'Requested additional diagnostics')}
-                      className="flex-1 py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs transition-all border border-slate-700 flex items-center justify-center gap-1.5"
-                    >
-                      <HelpCircle className="w-4 h-4" /> Request More Information
-                    </button>
-                  </div>
-                </div>
-              )}
-
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Executive Notes & Direction
+                </label>
+                <input
+                  type="text"
+                  value={reviewNotes}
+                  onChange={(e) => setReviewNotes(e.target.value)}
+                  className="w-full text-xs p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:border-blue-600"
+                />
+              </div>
             </div>
-          );
-        })}
-      </div>
+
+            {/* Approval Action Buttons */}
+            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
+              <button
+                onClick={() => handleReject(selectedApproval.id)}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Reject</span>
+              </button>
+
+              <button
+                onClick={() => handleRequestChanges(selectedApproval.id)}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Request Modifications</span>
+              </button>
+
+              <button
+                onClick={() => handleApprove(selectedApproval.id)}
+                className="px-5 py-2 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm flex items-center gap-2 transition-all cursor-pointer"
+              >
+                <Check className="w-4 h-4 stroke-[3]" />
+                <span>Apply Digital Sign-Off & Approve</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      )}
 
     </div>
   );
