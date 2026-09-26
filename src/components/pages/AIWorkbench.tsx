@@ -113,12 +113,19 @@ export const AIWorkbench: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(INITIAL_CHAT_MESSAGES);
   const [chatInput, setChatInput] = useState<string>('');
   const [isChatTyping, setIsChatTyping] = useState<boolean>(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  const isInitialMount = useRef(true);
 
-  // Auto-scroll chat to bottom when new messages arrive
+  // Auto-scroll ONLY within the chat box container (never scroll outer window/page)
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [chatMessages, isChatTyping]);
 
   // Send a chat message handler
@@ -261,7 +268,7 @@ export const AIWorkbench: React.FC = () => {
         </div>
 
         {/* Chat Messages Area (Scrollable) */}
-        <div className="h-[420px] lg:h-[460px] overflow-y-auto px-5 py-4 space-y-4 bg-[#FAFBFC] border-b border-slate-200">
+        <div ref={chatContainerRef} className="h-[420px] lg:h-[460px] overflow-y-auto px-5 py-4 space-y-4 bg-[#FAFBFC] border-b border-slate-200">
           
           {chatMessages.map((msg) => (
             <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -348,8 +355,6 @@ export const AIWorkbench: React.FC = () => {
               </div>
             </div>
           )}
-
-          <div ref={chatEndRef} />
         </div>
 
         {/* Chat Input & Prompt Composer Bar */}
