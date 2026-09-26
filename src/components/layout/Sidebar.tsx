@@ -85,6 +85,12 @@ export const Sidebar: React.FC<{ isMobileOpen?: boolean; onCloseMobile?: () => v
   // 2. Admin Control Center Items (Only rendered if user has admin permissions)
   const adminCenterItems: NavItem[] = [
     {
+      id: 'admin-overview',
+      label: 'Telemetry & System Health',
+      icon: <Sliders className="w-4 h-4 text-blue-600" />,
+      moduleKey: 'admin-overview'
+    },
+    {
       id: 'admin-security',
       label: 'CISO Security Dashboard',
       icon: <ShieldAlert className="w-4 h-4 text-rose-600" />,
@@ -92,21 +98,27 @@ export const Sidebar: React.FC<{ isMobileOpen?: boolean; onCloseMobile?: () => v
     },
     {
       id: 'admin-roles',
-      label: 'Roles & Permissions',
+      label: 'Roles & User Directory',
       icon: <Users className="w-4 h-4" />,
       moduleKey: 'admin-roles'
     },
     {
       id: 'admin-firewall',
       label: 'AI Capability Firewall',
-      icon: <Lock className="w-4 h-4 text-blue-600" />,
+      icon: <Lock className="w-4 h-4 text-amber-600" />,
       moduleKey: 'admin-firewall'
     },
     {
       id: 'admin-models',
-      label: 'Local Model Registry',
+      label: 'Model Registry & Routing',
       icon: <Cpu className="w-4 h-4" />,
       moduleKey: 'admin-models'
+    },
+    {
+      id: 'admin-policies',
+      label: 'Policy Engine & Rules',
+      icon: <FileText className="w-4 h-4 text-indigo-600" />,
+      moduleKey: 'admin-policies'
     },
     {
       id: 'admin-network',
