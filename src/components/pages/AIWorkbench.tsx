@@ -204,7 +204,235 @@ export const AIWorkbench: React.FC = () => {
   return (
     <div className="p-4 lg:p-7 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-150">
       
-      {/* 1. TOP METRICS STRIP (Crisp Enterprise Design) */}
+      {/* ═══ 1. PRIMARY HERO: CONVERSATIONAL AI ASSISTANT & QUESTION BENCH ═══ */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-card overflow-hidden flex flex-col">
+        
+        {/* Hero Header */}
+        <div className="bg-slate-900 text-white p-5 lg:p-6 relative overflow-hidden border-b border-slate-800">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
+
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center gap-1.5">
+                  <Bot className="w-3.5 h-3.5 text-blue-400" />
+                  SOVEREIGN INDUSTRIAL AI AGENT
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3" /> AIR-GAPPED MRPL LOCAL NODE
+                </span>
+              </div>
+              <h1 className="text-xl lg:text-2xl font-black text-white mt-2 tracking-tight">
+                Ask SovereignForge AI
+              </h1>
+              <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                Ask questions to query refinery inspection reports, engineering drawings, and SOP compliance standards. All reasoning executes on local MRPL GPUs with zero cloud egress.
+              </p>
+            </div>
+
+            {/* Quick Demo Trigger */}
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => {
+                  const prompt = 'Prepare approval note for Heat Exchanger HX-204 and check against relevant SOPs.';
+                  const files = ['inspection_report.pdf', 'SOP_4.2.1.pdf', 'P&ID_Unit_03.png', 'inspection_photo.jpg'];
+                  setPromptInput(prompt);
+                  setSelectedFiles(files);
+                  setChatInput(prompt);
+                  runAgentTask(prompt, files);
+                }}
+                disabled={isAgentRunning}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md flex items-center gap-2 transition-all hover:scale-102 border border-blue-400/30 cursor-pointer"
+              >
+                {isAgentRunning ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Executing Pipeline ({agentProgressStep}/7)...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-blue-200" />
+                    <span>⚡ Run 1-Click Hero Scenario Demo</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Messages Area (Scrollable) */}
+        <div className="h-[420px] lg:h-[460px] overflow-y-auto px-5 py-4 space-y-4 bg-[#FAFBFC] border-b border-slate-200">
+          
+          {chatMessages.map((msg) => (
+            <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              
+              {/* AI / System Avatar */}
+              {msg.role !== 'user' && (
+                <div className={`w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white shadow-xs ${
+                  msg.role === 'system' ? 'bg-slate-600' : 'bg-blue-600'
+                }`}>
+                  {msg.role === 'system' ? <ShieldCheck className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                </div>
+              )}
+
+              {/* Message Bubble */}
+              <div className={`max-w-[85%] lg:max-w-[75%] rounded-2xl px-4.5 py-3.5 text-xs leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-blue-600 text-white rounded-br-md shadow-xs'
+                  : msg.role === 'system'
+                  ? 'bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-mono italic'
+                  : 'bg-white text-slate-800 border border-slate-200 shadow-xs rounded-bl-md'
+              }`}>
+                {/* Render content with formatted text */}
+                {msg.content.split('\n').map((line, i) => {
+                  const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                  return (
+                    <p 
+                      key={i} 
+                      className={`${i > 0 ? 'mt-1.5' : ''} ${line === '' ? 'mt-2' : ''}`}
+                      dangerouslySetInnerHTML={{ __html: formatted }}
+                    />
+                  );
+                })}
+                
+                {/* Citation badges for AI messages */}
+                {msg.citations && msg.citations.length > 0 && (
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] font-mono font-bold text-slate-400 mr-1">PROVENANCE:</span>
+                    {msg.citations.map((cite, i) => (
+                      <button
+                        key={i}
+                        onClick={() => openSourceViewer(i)}
+                        className="citation-badge"
+                        title="Click to view exact source document passage"
+                      >
+                        [{i + 1}] {cite}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Timestamp */}
+                <div className={`mt-2 text-[9px] font-mono flex items-center justify-between ${
+                  msg.role === 'user' ? 'text-blue-200' : 'text-slate-400'
+                }`}>
+                  <span>{msg.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+                  {msg.role === 'assistant' && (
+                    <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[8px] font-bold">
+                      ✓ Deterministic Verification
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* User Avatar */}
+              {msg.role === 'user' && (
+                <div className="w-8 h-8 rounded-xl flex-shrink-0 bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                  {currentUser.avatar || 'U'}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Typing Indicator */}
+          {isChatTyping && (
+            <div className="flex gap-3 justify-start">
+              <div className="w-8 h-8 rounded-xl flex-shrink-0 bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                <Bot className="w-4 h-4" />
+              </div>
+              <div className="bg-white border border-slate-200 shadow-xs rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                <span className="text-[11px] text-slate-500 ml-1 font-mono">Running local vector retrieval & reasoning...</span>
+              </div>
+            </div>
+          )}
+
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Chat Input & Prompt Composer Bar */}
+        <div className="p-4 bg-white space-y-3">
+          
+          <div className="flex items-end gap-2.5">
+            {/* Attachment Button */}
+            <button 
+              onClick={() => showToast('Document Drawer', 'Select documents from the shelf below to include in context.', 'info')}
+              className="w-10 h-10 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors flex-shrink-0 cursor-pointer"
+              title="Attach documents"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+
+            {/* Text Input */}
+            <div className="flex-1 relative">
+              <textarea
+                ref={chatInputRef}
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendChat();
+                  }
+                }}
+                placeholder="Ask any question about SOPs, inspection results, relief valve sizing, or equipment status (e.g. 'What is the remaining wall thickness of HX-204?')..."
+                rows={2}
+                className="w-full rounded-xl border border-slate-300 bg-slate-50/60 px-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all font-medium resize-none pr-16 leading-relaxed"
+              />
+              <div className="absolute right-3 bottom-3 text-[9px] text-slate-400 font-mono flex items-center gap-1">
+                <CornerDownLeft className="w-3 h-3" /> Enter
+              </div>
+            </div>
+
+            {/* Send Button */}
+            <button
+              onClick={handleSendChat}
+              disabled={!chatInput.trim() || isChatTyping}
+              className={`h-10 px-4 rounded-xl flex items-center justify-center gap-1.5 font-bold text-xs transition-all flex-shrink-0 cursor-pointer ${
+                chatInput.trim() && !isChatTyping
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg'
+                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              }`}
+            >
+              <span>Ask</span>
+              <Send className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          
+          {/* Quick Starter Question Chips */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex-shrink-0">
+              💡 Suggested Questions:
+            </span>
+            {[
+              'What SOPs apply to HX-204?',
+              'Show corrosion rate trend for HX-204',
+              'Draft turnaround planning note',
+              'Audit P&ID Unit 03 relief valve PSV-304',
+              'Send deliverable to approval queue',
+            ].map((q, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  setChatInput(q);
+                  setTimeout(() => {
+                    chatInputRef.current?.focus();
+                  }, 50);
+                }}
+                className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-[11px] font-semibold text-slate-700 hover:text-blue-700 transition-all whitespace-nowrap cursor-pointer"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ═══ 2. QUICK METRICS STRIP ═══ */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         
         {/* Metric 1 */}
@@ -284,510 +512,153 @@ export const AIWorkbench: React.FC = () => {
 
       </div>
 
-      {/* 2. HERO TASK COMPOSER */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-card overflow-hidden">
-        
-        {/* Composer Hero Banner */}
-        <div className="bg-slate-900 text-white p-6 relative overflow-hidden border-b border-slate-800">
-          
-          {/* Subtle Industrial Grid Background Overlay */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
-
-          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-400/30">
-                  AUTONOMOUS MULTI-STEP AGENT
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3" /> AIR-GAPPED MRPL LOCAL NODE
-                </span>
-              </div>
-              <h1 className="text-xl lg:text-2xl font-black text-white mt-2.5 tracking-tight">
-                What would you like SovereignForge AI to do?
-              </h1>
-              <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                Ingest refinery inspection reports, drawings, or photos. The system cross-references internal SOPs, detects non-conformance deviations, and prepares formal engineering deliverables.
-              </p>
-            </div>
-
-            {/* Quick Demo Trigger */}
-            <button
-              onClick={() => {
-                handleSelectPreset(
-                  'Prepare approval note for Heat Exchanger HX-204 and check against relevant SOPs.',
-                  ['inspection_report.pdf', 'SOP_4.2.1.pdf', 'P&ID_Unit_03.png', 'inspection_photo.jpg']
-                );
-                handleRun();
-              }}
-              className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md flex items-center gap-2 transition-all hover:scale-102 border border-blue-400/30"
-            >
-              <Sparkles className="w-4 h-4 text-blue-200" />
-              <span>⚡ One-Click Hero Scenario Demo</span>
-            </button>
+      {/* ═══ 3. ATTACHED INDUSTRIAL DOCUMENTS SHELF ═══ */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <UploadCloud className="w-4 h-4 text-blue-600" />
+              Attached Industrial Documents & Vector Indexes ({selectedFiles.length} Selected)
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Click any card to attach/detach from the AI reasoning context
+            </p>
           </div>
+          <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 font-bold">
+            ● LOCAL VECTOR STORE READY
+          </span>
         </div>
 
-        {/* Composer Body */}
-        <div className="p-6 space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           
-          {/* Text Instruction Area */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                Engineering Task Instructions & Directives
-              </label>
-              <span className="text-[10px] text-slate-400 font-mono">Press Ctrl + Enter to run</span>
-            </div>
-            <textarea
-              value={promptInput}
-              onChange={(e) => setPromptInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.ctrlKey && e.key === 'Enter') handleRun();
-              }}
-              placeholder="E.g., Ingest the Q3 inspection report for Heat Exchanger HX-204, compare observed wall thickness and turnaround interval with SOP-4.2.1, detect deviations, and draft a formal approval note..."
-              rows={2}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50/50 p-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all font-sans leading-relaxed resize-none font-medium"
-            />
-          </div>
-
-          {/* Quick Preset Chips */}
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
-              Industrial Task Presets:
-            </span>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => handleSelectPreset(
-                  'Prepare approval note for Heat Exchanger HX-204 and check against relevant SOPs.',
-                  ['inspection_report.pdf', 'SOP_4.2.1.pdf', 'P&ID_Unit_03.png', 'inspection_photo.jpg']
-                )}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all text-left flex items-center gap-1.5 ${
-                  promptInput.includes('HX-204')
-                    ? 'bg-blue-50 border-blue-300 text-blue-800 font-bold'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                <span>⚡ Heat Exchanger HX-204 NDT & SOP-4.2.1 Audit</span>
-              </button>
-
-              <button
-                onClick={() => handleSelectPreset(
-                  'Audit P&ID Unit 03 relief valve PSV-304 setpoint against OISD-STD-129 and crude pre-heat line rating.',
-                  ['P&ID_Unit_03.png', 'SOP_4.2.1.pdf']
-                )}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all text-left flex items-center gap-1.5 ${
-                  promptInput.includes('PSV-304')
-                    ? 'bg-blue-50 border-blue-300 text-blue-800 font-bold'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                <span>🔍 P&ID Unit 03 Relief Line Sizing & PSV Audit</span>
-              </button>
-
-              <button
-                onClick={() => handleSelectPreset(
-                  'Compare L&T Turnaround Vendor Bid line items against MRPL Standard Scope Matrix and warranty terms.',
-                  ['vendor_bid.xlsx', 'SOP_4.2.1.pdf']
-                )}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all text-left flex items-center gap-1.5 ${
-                  promptInput.includes('Vendor Bid')
-                    ? 'bg-blue-50 border-blue-300 text-blue-800 font-bold'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                <span>📊 Vendor Turnaround Quotation & Scope Analysis</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Document Ingestion & Attachment Shelf */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <UploadCloud className="w-3.5 h-3.5 text-blue-600" />
-                Attached Industrial Documents ({selectedFiles.length} Selected)
-              </label>
-              <span className="text-[10px] text-slate-500">Click card to include / exclude from context</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-              
-              {/* Document 1: Inspection Report */}
-              <div 
-                onClick={() => handleToggleFile('inspection_report.pdf')}
-                className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                  selectedFiles.includes('inspection_report.pdf')
-                    ? 'bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-[10px]">
-                      PDF
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-slate-900 leading-tight truncate max-w-[130px]">inspection_report.pdf</h4>
-                      <span className="text-[10px] text-slate-500 font-mono">4.2 MB • HX-204</span>
-                    </div>
-                  </div>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    selectedFiles.includes('inspection_report.pdf') ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'
-                  }`}>
-                    {selectedFiles.includes('inspection_report.pdf') && <Check className="w-3 h-3 stroke-[3]" />}
-                  </div>
+          {/* Document 1: Inspection Report */}
+          <div 
+            onClick={() => handleToggleFile('inspection_report.pdf')}
+            className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+              selectedFiles.includes('inspection_report.pdf')
+                ? 'bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20 shadow-xs'
+                : 'bg-white border-slate-200 hover:border-slate-300 opacity-60'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-[10px]">
+                  PDF
                 </div>
-                <div className="mt-2 pt-1.5 border-t border-slate-200/60 flex items-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
-                  <span>✓ OCR done</span>
-                  <span>•</span>
-                  <span>✓ NDT tables</span>
+                <div>
+                  <h4 className="font-bold text-xs text-slate-900 leading-tight truncate max-w-[130px]">inspection_report.pdf</h4>
+                  <span className="text-[10px] text-slate-500 font-mono">4.2 MB • HX-204</span>
                 </div>
               </div>
-
-              {/* Document 2: SOP-4.2.1 */}
-              <div 
-                onClick={() => handleToggleFile('SOP_4.2.1.pdf')}
-                className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                  selectedFiles.includes('SOP_4.2.1.pdf')
-                    ? 'bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[10px]">
-                      SOP
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-slate-900 leading-tight truncate max-w-[130px]">SOP_4.2.1.pdf</h4>
-                      <span className="text-[10px] text-slate-500 font-mono">2.8 MB • Standard</span>
-                    </div>
-                  </div>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    selectedFiles.includes('SOP_4.2.1.pdf') ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'
-                  }`}>
-                    {selectedFiles.includes('SOP_4.2.1.pdf') && <Check className="w-3 h-3 stroke-[3]" />}
-                  </div>
-                </div>
-                <div className="mt-2 pt-1.5 border-t border-slate-200/60 flex items-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
-                  <span>✓ Vector indexed</span>
-                  <span>•</span>
-                  <span>✓ Rev 4.2</span>
-                </div>
-              </div>
-
-              {/* Document 3: P&ID Unit 03 */}
-              <div 
-                onClick={() => handleToggleFile('P&ID_Unit_03.png')}
-                className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                  selectedFiles.includes('P&ID_Unit_03.png')
-                    ? 'bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-[10px]">
-                      PNG
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-slate-900 leading-tight truncate max-w-[130px]">P&ID_Unit_03.png</h4>
-                      <span className="text-[10px] text-slate-500 font-mono">5.1 MB • Schematic</span>
-                    </div>
-                  </div>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    selectedFiles.includes('P&ID_Unit_03.png') ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'
-                  }`}>
-                    {selectedFiles.includes('P&ID_Unit_03.png') && <Check className="w-3 h-3 stroke-[3]" />}
-                  </div>
-                </div>
-                <div className="mt-2 pt-1.5 border-t border-slate-200/60 flex items-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
-                  <span>✓ Vision OCR</span>
-                  <span>•</span>
-                  <span>✓ Vector tags</span>
-                </div>
-              </div>
-
-              {/* Document 4: Inspection Photo */}
-              <div 
-                onClick={() => handleToggleFile('inspection_photo.jpg')}
-                className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                  selectedFiles.includes('inspection_photo.jpg')
-                    ? 'bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-[10px]">
-                      JPG
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-slate-900 leading-tight truncate max-w-[130px]">inspection_photo.jpg</h4>
-                      <span className="text-[10px] text-slate-500 font-mono">3.4 MB • Gasket Pit</span>
-                    </div>
-                  </div>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    selectedFiles.includes('inspection_photo.jpg') ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'
-                  }`}>
-                    {selectedFiles.includes('inspection_photo.jpg') && <Check className="w-3 h-3 stroke-[3]" />}
-                  </div>
-                </div>
-                <div className="mt-2 pt-1.5 border-t border-slate-200/60 flex items-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
-                  <span>✓ Visual scan</span>
-                  <span>•</span>
-                  <span>✓ Pitting tag</span>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Action Bar & AI Model Router Indicator */}
-          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
-            
-            {/* Automatic AI Router Indicator */}
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0">
-                <Cpu className="w-3.5 h-3.5" />
-              </div>
-              <div className="text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-900 uppercase tracking-wider text-[10px]">AI ROUTER:</span>
-                  <span className="font-mono text-[10px] font-bold text-blue-700 bg-blue-100/70 px-1.5 py-0.2 rounded border border-blue-200">
-                    Qwen2.5-VL-7B (Vision) + R1-Distill (Reasoning)
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-0.5">
-                  Task classified as <strong className="text-slate-700">Multimodal Document & SOP Compliance</strong> (Local On-Prem GPU).
-                </p>
-              </div>
-            </div>
-
-            {/* Execute & Reset Buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={resetTaskToFresh}
-                className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
-              >
-                Clear
-              </button>
-
-              <button
-                onClick={handleRun}
-                disabled={isAgentRunning}
-                className={`px-5 py-2 rounded-xl font-bold text-xs flex items-center gap-2 shadow-md transition-all ${
-                  isAgentRunning
-                    ? 'bg-blue-400 text-white cursor-wait'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
-                }`}
-              >
-                {isAgentRunning ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Executing Pipeline ({agentProgressStep}/7)...</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3.5 h-3.5 fill-white" />
-                    <span>Run Sovereign Agent</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* ═══ CONVERSATIONAL AI CHAT PANEL ═══ */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-card overflow-hidden flex flex-col" style={{ height: '520px' }}>
-        
-        {/* Chat Header */}
-        <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
-              <MessageSquare className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-bold text-slate-900 text-sm tracking-tight">Ask SovereignForge AI</h2>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-green"></span>
-                  LIVE
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-500 mt-0.5">
-                Ask follow-up questions, request analysis, or explore your documents — all processed locally
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-slate-400 font-mono">{chatMessages.length} messages</span>
-            <button 
-              onClick={() => { setChatMessages([INITIAL_CHAT_MESSAGES[0]]); showToast('Chat Cleared', 'Conversation history cleared. Session provenance retained in audit log.', 'info'); }}
-              className="text-[10px] font-bold text-slate-500 hover:text-slate-700 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              Clear Chat
-            </button>
-          </div>
-        </div>
-
-        {/* Chat Messages Area (Scrollable) */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-[#FAFBFC]">
-          
-          {chatMessages.map((msg) => (
-            <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              
-              {/* AI / System Avatar */}
-              {msg.role !== 'user' && (
-                <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center text-white ${
-                  msg.role === 'system' ? 'bg-slate-500' : 'bg-blue-600'
-                }`}>
-                  {msg.role === 'system' ? <ShieldCheck className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
-                </div>
-              )}
-
-              {/* Message Bubble */}
-              <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
-                msg.role === 'user'
-                  ? 'bg-blue-600 text-white rounded-br-md'
-                  : msg.role === 'system'
-                  ? 'bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-mono italic'
-                  : 'bg-white text-slate-800 border border-slate-200 shadow-xs rounded-bl-md'
+              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                selectedFiles.includes('inspection_report.pdf') ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'
               }`}>
-                {/* Render content with basic markdown-like formatting */}
-                {msg.content.split('\n').map((line, i) => {
-                  // Bold text
-                  const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                  return (
-                    <p 
-                      key={i} 
-                      className={`${i > 0 ? 'mt-1.5' : ''} ${line === '' ? 'mt-2' : ''}`}
-                      dangerouslySetInnerHTML={{ __html: formatted }}
-                    />
-                  );
-                })}
-                
-                {/* Citation badges for AI messages */}
-                {msg.citations && msg.citations.length > 0 && (
-                  <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap gap-1.5">
-                    {msg.citations.map((cite, i) => (
-                      <button
-                        key={i}
-                        onClick={() => openSourceViewer(i)}
-                        className="citation-badge"
-                      >
-                        [{i + 1}] {cite}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {selectedFiles.includes('inspection_report.pdf') && <Check className="w-3 h-3 stroke-[3]" />}
+              </div>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
+              <span>✓ Dense Indexed</span>
+              <span>•</span>
+              <span>✓ 8.2mm Wall Tag</span>
+            </div>
+          </div>
 
-                {/* Timestamp */}
-                <div className={`mt-1.5 text-[9px] font-mono ${
-                  msg.role === 'user' ? 'text-blue-200' : 'text-slate-400'
-                }`}>
-                  {msg.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                  {msg.role === 'assistant' && ' • Processed on local GPU'}
+          {/* Document 2: SOP-4.2.1 */}
+          <div 
+            onClick={() => handleToggleFile('SOP_4.2.1.pdf')}
+            className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+              selectedFiles.includes('SOP_4.2.1.pdf')
+                ? 'bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20 shadow-xs'
+                : 'bg-white border-slate-200 hover:border-slate-300 opacity-60'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[10px]">
+                  SOP
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-slate-900 leading-tight truncate max-w-[130px]">SOP_4.2.1.pdf</h4>
+                  <span className="text-[10px] text-slate-500 font-mono">2.8 MB • Standard</span>
                 </div>
               </div>
+              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                selectedFiles.includes('SOP_4.2.1.pdf') ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'
+              }`}>
+                {selectedFiles.includes('SOP_4.2.1.pdf') && <Check className="w-3 h-3 stroke-[3]" />}
+              </div>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
+              <span>✓ Vector indexed</span>
+              <span>•</span>
+              <span>✓ Rev 4.2 Standards</span>
+            </div>
+          </div>
 
-              {/* User Avatar */}
-              {msg.role === 'user' && (
-                <div className="w-7 h-7 rounded-lg flex-shrink-0 bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold">
-                  {currentUser.avatar || 'U'}
+          {/* Document 3: P&ID Unit 03 */}
+          <div 
+            onClick={() => handleToggleFile('P&ID_Unit_03.png')}
+            className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+              selectedFiles.includes('P&ID_Unit_03.png')
+                ? 'bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20 shadow-xs'
+                : 'bg-white border-slate-200 hover:border-slate-300 opacity-60'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-[10px]">
+                  PNG
                 </div>
-              )}
-            </div>
-          ))}
-
-          {/* Typing Indicator */}
-          {isChatTyping && (
-            <div className="flex gap-3 justify-start">
-              <div className="w-7 h-7 rounded-lg flex-shrink-0 bg-blue-600 text-white flex items-center justify-center">
-                <Bot className="w-3.5 h-3.5" />
+                <div>
+                  <h4 className="font-bold text-xs text-slate-900 leading-tight truncate max-w-[130px]">P&ID_Unit_03.png</h4>
+                  <span className="text-[10px] text-slate-500 font-mono">5.1 MB • Schematic</span>
+                </div>
               </div>
-              <div className="bg-white border border-slate-200 shadow-xs rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                <span className="text-[10px] text-slate-400 ml-2 font-mono">Querying local knowledge base...</span>
+              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                selectedFiles.includes('P&ID_Unit_03.png') ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'
+              }`}>
+                {selectedFiles.includes('P&ID_Unit_03.png') && <Check className="w-3 h-3 stroke-[3]" />}
               </div>
             </div>
-          )}
-
-          <div ref={chatEndRef} />
-        </div>
-
-        {/* Chat Input Bar */}
-        <div className="flex-shrink-0 border-t border-slate-200 bg-white p-3.5">
-          <div className="flex items-end gap-2.5">
-            
-            {/* Attachment Button */}
-            <button className="w-9 h-9 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors flex-shrink-0">
-              <Paperclip className="w-4 h-4" />
-            </button>
-
-            {/* Text Input */}
-            <div className="flex-1 relative">
-              <textarea
-                ref={chatInputRef}
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendChat();
-                  }
-                }}
-                placeholder="Ask a follow-up question about your documents, SOPs, or equipment..."
-                rows={1}
-                className="w-full rounded-xl border border-slate-300 bg-slate-50/50 px-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all font-medium resize-none pr-10"
-              />
-              <div className="absolute right-2.5 bottom-2 text-[9px] text-slate-400 font-mono flex items-center gap-1">
-                <CornerDownLeft className="w-3 h-3" /> Enter
-              </div>
+            <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
+              <span>✓ Vision OCR</span>
+              <span>•</span>
+              <span>✓ Line 03-CRD-102</span>
             </div>
-
-            {/* Send Button */}
-            <button
-              onClick={handleSendChat}
-              disabled={!chatInput.trim() || isChatTyping}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
-                chatInput.trim() && !isChatTyping
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-              }`}
-            >
-              <Send className="w-4 h-4" />
-            </button>
           </div>
-          
-          {/* Quick Action Chips */}
-          <div className="flex items-center gap-2 mt-2.5 overflow-x-auto">
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex-shrink-0">Quick:</span>
-            {[
-              'What SOPs apply to HX-204?',
-              'Show corrosion rate trend',
-              'Draft turnaround plan',
-              'Send to approval queue',
-            ].map((q, i) => (
-              <button
-                key={i}
-                onClick={() => { setChatInput(q); setTimeout(() => chatInputRef.current?.focus(), 50); }}
-                className="flex-shrink-0 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[10px] font-semibold text-slate-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all whitespace-nowrap"
-              >
-                {q}
-              </button>
-            ))}
+
+          {/* Document 4: Inspection Photo */}
+          <div 
+            onClick={() => handleToggleFile('inspection_photo.jpg')}
+            className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+              selectedFiles.includes('inspection_photo.jpg')
+                ? 'bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20 shadow-xs'
+                : 'bg-white border-slate-200 hover:border-slate-300 opacity-60'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-[10px]">
+                  JPG
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-slate-900 leading-tight truncate max-w-[130px]">inspection_photo.jpg</h4>
+                  <span className="text-[10px] text-slate-500 font-mono">3.4 MB • Gasket Pit</span>
+                </div>
+              </div>
+              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                selectedFiles.includes('inspection_photo.jpg') ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'
+              }`}>
+                {selectedFiles.includes('inspection_photo.jpg') && <Check className="w-3 h-3 stroke-[3]" />}
+              </div>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
+              <span>✓ Visual scan</span>
+              <span>•</span>
+              <span>✓ Flange Pitting Tag</span>
+            </div>
           </div>
+
         </div>
       </div>
 
