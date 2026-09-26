@@ -5,7 +5,7 @@ import {
   ArrowRight, ShieldCheck, Cpu, RefreshCw, ExternalLink, 
   Clock, Sparkles, Check, ChevronDown, ChevronUp, Download, Send, 
   Layers, Eye, FileCheck, FileText, FileSpreadsheet, Image as ImageIcon,
-  Activity, Zap, Compass, Flame, CheckSquare, MessageSquare, User, Paperclip, CornerDownLeft
+  Activity, Zap, Compass, Flame, CheckSquare, MessageSquare, User, Paperclip, CornerDownLeft, X
 } from 'lucide-react';
 import { downloadApprovalNotePDF } from '../../utils/exportUtils';
 
@@ -115,7 +115,40 @@ export const AIWorkbench: React.FC = () => {
   const [isChatTyping, setIsChatTyping] = useState<boolean>(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isInitialMount = useRef(true);
+
+  // Handle native file upload from device
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newFileNames: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      newFileNames.push(file.name);
+    }
+
+    setSelectedFiles(prev => {
+      const unique = Array.from(new Set([...prev, ...newFileNames]));
+      return unique;
+    });
+
+    const fileCount = newFileNames.length;
+    showToast(
+      'Document Attached & Indexed',
+      `Attached ${fileCount} file(s): ${newFileNames.join(', ')}. Local vision OCR & vector embeddings generated on MRPL GPU node.`,
+      'success'
+    );
+
+    // Reset input so same file can be re-uploaded if needed
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleRemoveAttachedFile = (fileName: string) => {
+    setSelectedFiles(prev => prev.filter(f => f !== fileName));
+    showToast('File Detached', `Removed ${fileName} from AI active context.`, 'info');
+  };
 
   // Auto-scroll ONLY within the chat box container (never scroll outer window/page)
   useEffect(() => {
@@ -360,14 +393,74 @@ export const AIWorkbench: React.FC = () => {
         {/* Chat Input & Prompt Composer Bar */}
         <div className="p-4 bg-white space-y-3">
           
+          {/* Hidden Real File Input */}
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            multiple 
+            accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv,.py,.txt,.svg,.dwg,.doc,.docx" 
+            className="hidden" 
+          />
+
+          {/* Attached Files Chips Bar */}
+          {selectedFiles.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              <span className="text-[10px] font-mono font-bold uppercase text-slate-400 flex-shrink-0 flex items-center gap-1">
+                <Paperclip className="w-3 h-3 text-blue-600" />
+                Attached ({selectedFiles.length}):
+              </span>
+              {selectedFiles.map((fileName) => {
+                const isPdf = fileName.endsWith('.pdf');
+                const isImg = fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg');
+                const isSheet = fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv');
+                
+                return (
+                  <div 
+                    key={fileName}
+                    className="flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50/80 border border-blue-200 text-[11px] font-bold text-blue-900 shadow-2xs group"
+                  >
+                    <span className={`w-2 h-2 rounded-full ${isPdf ? 'bg-rose-500' : isImg ? 'bg-purple-500' : isSheet ? 'bg-emerald-500' : 'bg-blue-500'}`}></span>
+                    <span className="truncate max-w-[150px] font-mono">{fileName}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveAttachedFile(fileName)}
+                      className="text-slate-400 hover:text-rose-600 p-0.5 rounded transition-colors cursor-pointer"
+                      title={`Remove ${fileName}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-shrink-0 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-slate-50 hover:bg-blue-50 px-2 py-1 rounded-lg border border-dashed border-blue-300 transition-colors cursor-pointer"
+              >
+                + Add More
+              </button>
+            </div>
+          )}
+
           <div className="flex items-end gap-2.5">
             {/* Attachment Button */}
             <button 
-              onClick={() => showToast('Document Drawer', 'Select documents from the shelf below to include in context.', 'info')}
-              className="w-10 h-10 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors flex-shrink-0 cursor-pointer"
-              title="Attach documents"
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all flex-shrink-0 cursor-pointer relative ${
+                selectedFiles.length > 0
+                  ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-xs'
+                  : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900'
+              }`}
+              title="Attach documents from your computer (.pdf, .png, .jpg, .xlsx, etc.)"
             >
               <Paperclip className="w-4 h-4" />
+              {selectedFiles.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-blue-600 text-white text-[9px] font-mono font-bold flex items-center justify-center border-2 border-white">
+                  {selectedFiles.length}
+                </span>
+              )}
             </button>
 
             {/* Text Input */}
