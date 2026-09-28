@@ -1166,11 +1166,11 @@ export const AIWorkbench: React.FC = () => {
           </div>
 
           {/* ═══ MULTI-STEP AGENT TRACE (EXPANDABLE PER SHOT 4) ═══ */}
-          <div className="border-t border-slate-200 bg-slate-50 p-3 space-y-2.5">
-            <div className="flex items-center justify-between">
+          <div className="border-t-2 border-blue-200 bg-slate-50/90 p-3 space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Bot className="w-4 h-4 text-blue-600" />
-                <span className="text-[11px] font-bold text-slate-900 uppercase tracking-tight">Agent Execution Pipeline</span>
+                <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">Agent Execution Pipeline</span>
                 <button
                   onClick={() => setIsAgentTraceExpanded(!isAgentTraceExpanded)}
                   className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 cursor-pointer transition-all shadow-2xs ${
@@ -1185,104 +1185,94 @@ export const AIWorkbench: React.FC = () => {
                 </button>
               </div>
 
-              {/* Dynamic Model Router Badge (Shot 4 Hover / Click Target) */}
-              <div 
-                className="relative hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs cursor-pointer select-none"
-                onMouseEnter={() => setIsRouterCardOpen(true)}
-                onMouseLeave={() => setIsRouterCardOpen(false)}
-                onClick={() => setIsRouterCardOpen(!isRouterCardOpen)}
-                title="Hover or click to inspect active local neural weights & hardware telemetry (Shot 4)"
-              >
-                <span className="text-[9px] font-bold uppercase text-slate-400">ROUTER:</span>
-                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1.5 transition-all ${
-                  agentProgressStep <= 2
-                    ? 'bg-purple-50 text-purple-800 border-purple-200'
-                    : agentProgressStep <= 5
-                    ? 'bg-blue-50 text-blue-800 border-blue-200'
-                    : 'bg-indigo-50 text-indigo-800 border-indigo-200'
-                }`}>
-                  <span className={`w-2 h-2 rounded-full ${isAgentRunning ? 'bg-emerald-500 animate-ping' : 'bg-emerald-500'}`}></span>
-                  {agentProgressStep <= 2 
-                    ? '👁️ Vision (Qwen2.5-VL-72B)' 
-                    : agentProgressStep <= 5 
-                    ? '🧠 Reasoning (DeepSeek-R1)' 
-                    : '✍️ Drafting (Qwen-2.5-72B)'}
-                </span>
+              {/* Dynamic Model Router Badge (ALWAYS VISIBLE - Shot 4 Hover & Click Target) */}
+              <div className="flex items-center gap-2">
+                <div 
+                  className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border-2 border-purple-300 hover:border-purple-500 shadow-sm cursor-pointer select-none transition-all group"
+                  onMouseEnter={() => setIsRouterCardOpen(true)}
+                  onMouseLeave={() => setIsRouterCardOpen(false)}
+                  onClick={() => setIsRouterCardOpen(!isRouterCardOpen)}
+                  title="Hover or click to inspect active local neural weights & hardware telemetry (Shot 4)"
+                >
+                  <span className="text-[9px] font-black uppercase text-purple-900 tracking-wider">ROUTER:</span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1.5 transition-all ${
+                    agentProgressStep <= 2
+                      ? 'bg-purple-100 text-purple-900 border-purple-300'
+                      : agentProgressStep <= 5
+                      ? 'bg-blue-100 text-blue-900 border-blue-300'
+                      : 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full ${isAgentRunning ? 'bg-emerald-500 animate-ping' : 'bg-emerald-500'}`}></span>
+                    {agentProgressStep <= 2 
+                      ? '👁️ Vision (Qwen2.5-VL-72B)' 
+                      : agentProgressStep <= 5 
+                      ? '🧠 Reasoning (DeepSeek-R1)' 
+                      : '✍️ Drafting (Qwen-2.5-72B)'}
+                  </span>
 
-                {/* Model Router Hover & Click Inspector Card */}
-                {isRouterCardOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-80 p-3.5 bg-slate-950 text-white rounded-2xl shadow-2xl text-[10px] font-mono z-50 border border-slate-700 animate-in fade-in duration-100">
-                    <div className="font-bold text-emerald-400 flex items-center justify-between pb-2 border-b border-slate-800">
-                      <span className="flex items-center gap-1.5">
-                        <Cpu className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>ACTIVE AIR-GAPPED WEIGHTS</span>
-                      </span>
-                      <span className="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-bold border border-emerald-800">
-                        0 EGRESS
-                      </span>
-                    </div>
+                  {/* Model Router Hover & Click Inspector Card */}
+                  {isRouterCardOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-84 p-4 bg-slate-950 text-white rounded-2xl shadow-2xl text-[10px] font-mono z-50 border-2 border-purple-500/80 animate-in fade-in duration-100">
+                      <div className="font-bold text-emerald-400 flex items-center justify-between pb-2 border-b border-slate-800">
+                        <span className="flex items-center gap-1.5">
+                          <Cpu className="w-4 h-4 text-emerald-400" />
+                          <span className="text-[11px] tracking-wide">ACTIVE AIR-GAPPED WEIGHTS</span>
+                        </span>
+                        <span className="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-bold border border-emerald-800">
+                          0 EGRESS
+                        </span>
+                      </div>
 
-                    <div className="pt-2.5 space-y-1.5 text-slate-300 text-[10px]">
-                      <div>• <strong>Current Model:</strong> <span className="text-white font-bold">{agentProgressStep <= 2 ? 'Qwen2.5-VL-72B-Vision' : agentProgressStep <= 5 ? 'DeepSeek-R1-Distill-70B' : 'Qwen-2.5-72B-Instruct'}</span></div>
-                      <div>• <strong>Active Pipeline Role:</strong> <span className="text-blue-400">{agentProgressStep <= 2 ? 'OCR & P&ID Drawing Computer Vision' : agentProgressStep <= 5 ? 'Statutory SOP Reasoning & Math Sandbox' : 'Executive Approval Note Drafting'}</span></div>
-                      <div>• <strong>Cluster Hardware:</strong> 4x NVIDIA H100 SXM5 80GB (On-Premise)</div>
-                      <div>• <strong>VRAM Utilization:</strong> 42.4 GB / 320 GB (13.2%)</div>
-                      <div>• <strong>Inference Latency:</strong> ~340ms • <strong>Temp:</strong> 48°C</div>
-                      <div>• <strong>Perimeter Invariant:</strong> 100% Isolated (0 External Bytes)</div>
-                      <div className="pt-1 border-t border-slate-800 text-[9px] text-slate-400 break-all">
-                        • <strong>SHA-256 Checksum:</strong> <span className="text-emerald-400 font-mono">0x7F8A9B2C3D4E5F60718293A4B5C6</span>
+                      <div className="pt-3 space-y-2 text-slate-300 text-[10px]">
+                        <div>• <strong>Current Neural Model:</strong> <span className="text-white font-black text-[11px]">{agentProgressStep <= 2 ? 'Qwen2.5-VL-72B-Vision' : agentProgressStep <= 5 ? 'DeepSeek-R1-Distill-70B' : 'Qwen-2.5-72B-Instruct'}</span></div>
+                        <div>• <strong>Active Pipeline Role:</strong> <span className="text-purple-300 font-bold">{agentProgressStep <= 2 ? 'OCR & P&ID Drawing Computer Vision' : agentProgressStep <= 5 ? 'Statutory SOP Reasoning & Math Sandbox' : 'Executive Approval Note Drafting'}</span></div>
+                        <div>• <strong>Cluster Hardware:</strong> 4x NVIDIA H100 SXM5 80GB (Local Air-Gapped)</div>
+                        <div>• <strong>VRAM Utilization:</strong> 42.4 GB / 320 GB (13.2%)</div>
+                        <div>• <strong>Inference Latency:</strong> ~340ms • <strong>Temp:</strong> 48°C • <strong>Power:</strong> 380W</div>
+                        <div>• <strong>Network Invariant:</strong> 100% On-Premise (0 External Packets)</div>
+                        <div className="pt-2 border-t border-slate-800 text-[9px] text-slate-400 break-all">
+                          • <strong>Hardware Attestation Hash:</strong> <span className="text-emerald-400 font-mono">0x7F8A9B2C3D4E5F60718293A4B5C6</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              {/* Demo Pacing Mode Selector (90s Demo Recording vs 15s Fast) */}
-              <div className="hidden lg:flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-[9px] font-mono font-bold shadow-2xs">
-                <button
-                  onClick={() => {
-                    setDemoDurationMode('90s');
-                    showToast('Pacing Set: 90s', 'Shot 4 execution set to 90 seconds for live video recording.', 'info');
-                  }}
-                  className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
-                    demoDurationMode === '90s'
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                  title="90-second execution pacing for video demo recording"
-                >
-                  ⏱️ 90s Demo
-                </button>
-                <button
-                  onClick={() => {
-                    setDemoDurationMode('15s');
-                    showToast('Pacing Set: 15s', 'Fast pipeline execution active.', 'info');
-                  }}
-                  className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
-                    demoDurationMode === '15s'
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                  title="15-second fast mode"
-                >
-                  ⚡ 15s Fast
-                </button>
-              </div>
+                {/* Demo Pacing Mode Selector (90s Demo Recording vs 15s Fast) */}
+                <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-[9px] font-mono font-bold shadow-2xs">
+                  <button
+                    onClick={() => {
+                      setDemoDurationMode('90s');
+                      showToast('Pacing Set: 90s', 'Shot 4 execution set to 90 seconds for live video recording.', 'info');
+                    }}
+                    className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                      demoDurationMode === '90s'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                    title="90-second execution pacing for video demo recording"
+                  >
+                    ⏱️ 90s
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDemoDurationMode('15s');
+                      showToast('Pacing Set: 15s', 'Fast pipeline execution active.', 'info');
+                    }}
+                    className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                      demoDurationMode === '15s'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                    title="15-second fast mode"
+                  >
+                    ⚡ 15s
+                  </button>
+                </div>
 
-              {/* Agent Pause / Stop Controls */}
-              <div className="flex items-center gap-1.5">
-                {isAgentRunning && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setIsAgentPaused(!isAgentPaused);
-                        showToast(isAgentPaused ? 'Agent Resumed' : 'Agent Paused', 'Paused pipeline execution.', 'info');
-                      }}
-                      className="p-1 px-2 rounded-lg bg-amber-100 text-amber-800 hover:bg-amber-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
-                    >
-                      <Pause className="w-3 h-3" />
-                      <span>{isAgentPaused ? 'Resume' : 'Pause'}</span>
-                    </button>
+                {/* Run Agent / Stop Button */}
+                <div className="flex items-center gap-1.5">
+                  {isAgentRunning && (
                     <button
                       onClick={() => {
                         resetTaskToFresh();
@@ -1293,21 +1283,21 @@ export const AIWorkbench: React.FC = () => {
                       <Square className="w-3 h-3" />
                       <span>Stop</span>
                     </button>
-                  </>
-                )}
-                <button
-                  onClick={handleRunPipeline}
-                  disabled={isAgentRunning}
-                  className={`px-3 py-1 font-bold text-[11px] rounded-lg shadow-xs flex items-center gap-1.5 cursor-pointer transition-all ${
-                    isAgentRunning
-                      ? 'bg-blue-100 text-blue-700 border border-blue-300'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
-                  }`}
-                  title="Run autonomous industrial agent pipeline (Shot 4)"
-                >
-                  {isAgentRunning ? <RefreshCw className="w-3 h-3 animate-spin text-blue-600" /> : <Play className="w-3 h-3 fill-white" />}
-                  <span>{isAgentRunning ? `Step ${agentProgressStep}/7 (${agentElapsedTime}s)...` : 'Run Agent'}</span>
-                </button>
+                  )}
+                  <button
+                    onClick={handleRunPipeline}
+                    disabled={isAgentRunning}
+                    className={`px-3 py-1 font-bold text-[11px] rounded-lg shadow-xs flex items-center gap-1.5 cursor-pointer transition-all ${
+                      isAgentRunning
+                        ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                    }`}
+                    title="Run autonomous industrial agent pipeline (Shot 4)"
+                  >
+                    {isAgentRunning ? <RefreshCw className="w-3 h-3 animate-spin text-blue-600" /> : <Play className="w-3 h-3 fill-white" />}
+                    <span>{isAgentRunning ? `Running (${agentElapsedTime}s / ~88s)...` : 'Run Agent'}</span>
+                  </button>
+                </div>
               </div>
             </div>
 
