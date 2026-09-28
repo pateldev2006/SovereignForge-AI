@@ -120,7 +120,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return DEMO_USERS[0]; // Plant Engineer by default
   });
 
-  const [activePage, setActivePage] = useState<PageId>('workbench');
+  const [activePage, setActivePage] = useState<PageId>('landing');
   const [systemMode, setSystemMode] = useState<SystemStatusMode>('FULL');
 
   // Core state collections

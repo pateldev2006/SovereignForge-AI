@@ -33,7 +33,7 @@ const MainLayout: React.FC = () => {
   // If on landing page, render dedicated full-screen landing page with its own nav & footer
   if (activePage === 'landing') {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 font-sans">
+      <div className="min-h-screen bg-[#FEFEFE] text-[#051747] font-sans">
         <LandingPage />
         <SovereigntyMonitorModal />
         <JudgeDemoTour />
