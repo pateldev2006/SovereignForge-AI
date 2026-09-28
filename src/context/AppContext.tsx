@@ -284,11 +284,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'info'
     );
 
-    // Simulate step-by-step progress
+    // Step timings calibrated for 60-90s demo presentation (~19s total)
+    // Step 1: OCR & Table Parsing (2.6s)
+    // Step 2: P&ID Computer Vision (2.8s)
+    // Step 3: Dense SOP RAG Retrieval (2.6s)
+    // Step 4: API 510 Math Verification (2.8s)
+    // Step 5: SOP Deviation Audit (3.2s)
+    // Step 6: Approval Note Synthesis (3.2s)
+    // Step 7: SHA-256 Ledger Attestation (2.0s)
+    const stepDelays = [2600, 2800, 2600, 2800, 3200, 3200, 2000];
+
     for (let step = 1; step <= 7; step++) {
       setAgentProgressStep(step);
-      // Brief pause between steps for realistic live visualization
-      await new Promise(res => setTimeout(res, 600));
+      await new Promise(res => setTimeout(res, stepDelays[step - 1]));
     }
 
     setIsAgentRunning(false);

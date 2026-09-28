@@ -284,10 +284,57 @@ export const AIWorkbench: React.FC = () => {
     }
   }, [chatMessages, isChatTyping]);
 
-  // Send chat message
+  // Unified Agent Execution Handler for Shot 4
+  const handleExecuteAgent = (overridePrompt?: string) => {
+    const rawPrompt = overridePrompt || chatInput.trim() || promptInput || 'Draft an approval note for the corrosion findings. Check against our SOPs.';
+    const filesToUse = selectedFiles.length > 0 ? selectedFiles : ['sample_inspection_report.pdf', 'SOP_4.2.1.pdf'];
+
+    if (selectedFiles.length === 0) {
+      setSelectedFiles(filesToUse);
+    }
+
+    // Add user message to chat UI
+    const userMsg: ChatMessage = {
+      id: `usr-${Date.now()}`,
+      role: 'user',
+      content: rawPrompt,
+      timestamp: new Date(),
+    };
+    setChatMessages(prev => [...prev, userMsg]);
+    setChatInput('');
+    setIsAgentTraceExpanded(true); // Auto-expand trace panel immediately per Shot 4!
+    
+    runAgentTask(rawPrompt, filesToUse).then(() => {
+      setIsDeliverableStudioOpen(true);
+      const assistantMsg: ChatMessage = {
+        id: `ast-${Date.now()}`,
+        role: 'assistant',
+        content: `**Autonomous Compliance Analysis Complete (7/7 Steps)**\n\n• **Ingested Document:** NDT Inspection Report (\`INSP/2026/HX-204-Q3\`) & \`SOP-4.2.1 Rev 4\`\n• **Measured Wall Thickness:** **8.2 mm** (Retirement Threshold: 7.8 mm, Remaining Life: ~1.43 yrs)\n• ⚠️ **Critical SOP Deviation:** Turnaround proposal (18 months) exceeds 12-month limit mandated by \`SOP-4.2.1 §7.1\` for sour crude service.\n• **Generated Output:** Formal Technical Approval Note (\`MECH/2026/HX-204-APPR\`) ready in Live Deliverable Studio.`,
+        timestamp: new Date(),
+        citations: ['INSP/2026/HX-204-Q3 p.4', 'SOP-4.2.1 §7.1', 'SOP-4.2.1 §4.3.4']
+      };
+      setChatMessages(prev => [...prev, assistantMsg]);
+    });
+  };
+
+  // Run full Agent pipeline from toolbar button
+  const handleRunPipeline = () => {
+    handleExecuteAgent();
+  };
+
+  // Send chat message or run agent if actionable
   const handleSendChat = () => {
     const trimmed = chatInput.trim();
-    if (!trimmed || isChatTyping) return;
+    if (!trimmed || isAgentRunning || isChatTyping) return;
+
+    // Check if input is an actionable directive or files are attached
+    const isDirective = selectedFiles.length > 0 || 
+      /draft|approval|note|sop|corrosion|findings|turnaround|audit|report|inspect|check|overhaul|thickness/i.test(trimmed);
+
+    if (isDirective) {
+      handleExecuteAgent(trimmed);
+      return;
+    }
 
     const userMsg: ChatMessage = {
       id: `usr-${Date.now()}`,
@@ -299,7 +346,7 @@ export const AIWorkbench: React.FC = () => {
     setChatInput('');
     setIsChatTyping(true);
 
-    const delay = 1400 + Math.random() * 1200;
+    const delay = 1200 + Math.random() * 800;
     setTimeout(() => {
       const lowerInput = trimmed.toLowerCase();
       const matched = AI_RESPONSE_BANK.find(r =>
@@ -324,15 +371,6 @@ export const AIWorkbench: React.FC = () => {
     setPromptInput(tpl.prompt);
     setSelectedFiles(tpl.files);
     showToast('Template Applied', `Loaded template "${tpl.title}" with pre-indexed document context.`, 'info');
-  };
-
-  // Run full Agent pipeline
-  const handleRunPipeline = () => {
-    if (selectedFiles.length === 0) {
-      showToast('No Documents Attached', 'Please attach at least one document for the agent to analyze.', 'warning');
-      return;
-    }
-    runAgentTask(promptInput, selectedFiles);
   };
 
   return (
@@ -662,11 +700,15 @@ export const AIWorkbench: React.FC = () => {
                 <span className="text-[11px] font-bold text-slate-900 uppercase tracking-tight">Agent Execution Pipeline</span>
                 <button
                   onClick={() => setIsAgentTraceExpanded(!isAgentTraceExpanded)}
-                  className="text-[9px] font-mono font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 flex items-center gap-1 cursor-pointer transition-colors"
-                  title="Click to toggle full agent execution trace"
+                  className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 cursor-pointer transition-all shadow-2xs ${
+                    isAgentTraceExpanded 
+                      ? 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-200' 
+                      : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200'
+                  }`}
+                  title="Click to toggle full agent execution trace (Shot 4)"
                 >
-                  <span>{agentProgressStep}/7 Steps</span>
-                  {isAgentTraceExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  <span>{isAgentTraceExpanded ? '▲ Hide Steps' : `▼ Show Steps (${agentProgressStep}/7)`}</span>
+                  {isAgentTraceExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </button>
               </div>
 
@@ -676,14 +718,14 @@ export const AIWorkbench: React.FC = () => {
                 title="Model Router dynamically assigns specialized local neural weights per step"
               >
                 <span className="text-[9px] font-bold uppercase text-slate-400">ROUTER:</span>
-                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border flex items-center gap-1 ${
+                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border flex items-center gap-1 transition-all ${
                   agentProgressStep <= 2
                     ? 'bg-purple-50 text-purple-800 border-purple-200'
                     : agentProgressStep <= 5
                     ? 'bg-blue-50 text-blue-800 border-blue-200'
                     : 'bg-indigo-50 text-indigo-800 border-indigo-200'
                 }`}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isAgentRunning ? 'bg-emerald-500 animate-ping' : 'bg-emerald-500'}`}></span>
                   {agentProgressStep <= 2 
                     ? '👁️ Vision (Qwen2.5-VL-72B)' 
                     : agentProgressStep <= 5 
@@ -692,15 +734,16 @@ export const AIWorkbench: React.FC = () => {
                 </span>
 
                 {/* Model Router Hover Tooltip Card */}
-                <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block w-64 p-2.5 bg-slate-900 text-white rounded-xl shadow-xl text-[10px] font-mono z-30 border border-slate-700 pointer-events-none">
-                  <div className="font-bold text-emerald-400 flex items-center justify-between pb-1 border-b border-slate-800">
-                    <span>ACTIVE AIR-GAPPED WEIGHTS</span>
-                    <span>0 EGRESS</span>
+                <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block w-72 p-3 bg-slate-900 text-white rounded-xl shadow-2xl text-[10px] font-mono z-30 border border-slate-700 pointer-events-none">
+                  <div className="font-bold text-emerald-400 flex items-center justify-between pb-1.5 border-b border-slate-800">
+                    <span>⚡ ACTIVE AIR-GAPPED WEIGHTS</span>
+                    <span className="bg-emerald-950 text-emerald-400 px-1 rounded border border-emerald-800">0 EGRESS</span>
                   </div>
-                  <div className="pt-1.5 space-y-1 text-slate-300">
-                    <div>• <strong>Current:</strong> {agentProgressStep <= 2 ? 'Qwen2.5-VL-72B (Vision)' : agentProgressStep <= 5 ? 'DeepSeek-R1-Distill-70B' : 'Qwen-2.5-72B-Instruct'}</div>
-                    <div>• <strong>Latency:</strong> ~340ms • <strong>VRAM:</strong> 42.4 GB</div>
-                    <div>• <strong>Integrity:</strong> SHA-256 Bit-Level Verified</div>
+                  <div className="pt-2 space-y-1 text-slate-300">
+                    <div>• <strong>Current Model:</strong> {agentProgressStep <= 2 ? 'Qwen2.5-VL-72B-Vision' : agentProgressStep <= 5 ? 'DeepSeek-R1-Distill-70B' : 'Qwen-2.5-72B-Instruct'}</div>
+                    <div>• <strong>Active Hardware:</strong> 4x NVIDIA H100 SXM5 (Air-Gapped)</div>
+                    <div>• <strong>VRAM Util:</strong> 42.4 GB / 320 GB • <strong>Latency:</strong> ~340ms</div>
+                    <div>• <strong>Integrity Hash:</strong> SHA-256 Bit-Level Verified</div>
                   </div>
                 </div>
               </div>
@@ -714,7 +757,7 @@ export const AIWorkbench: React.FC = () => {
                         setIsAgentPaused(!isAgentPaused);
                         showToast(isAgentPaused ? 'Agent Resumed' : 'Agent Paused', 'Paused pipeline execution.', 'info');
                       }}
-                      className="p-1 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                      className="p-1 px-2 rounded-lg bg-amber-100 text-amber-800 hover:bg-amber-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <Pause className="w-3 h-3" />
                       <span>{isAgentPaused ? 'Resume' : 'Pause'}</span>
@@ -724,7 +767,7 @@ export const AIWorkbench: React.FC = () => {
                         resetTaskToFresh();
                         showToast('Agent Stopped', 'Pipeline execution halted by user.', 'warning');
                       }}
-                      className="p-1 rounded bg-rose-100 text-rose-800 hover:bg-rose-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                      className="p-1 px-2 rounded-lg bg-rose-100 text-rose-800 hover:bg-rose-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <Square className="w-3 h-3" />
                       <span>Stop</span>
@@ -734,38 +777,51 @@ export const AIWorkbench: React.FC = () => {
                 <button
                   onClick={handleRunPipeline}
                   disabled={isAgentRunning}
-                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] rounded-lg shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  className={`px-3 py-1 font-bold text-[11px] rounded-lg shadow-xs flex items-center gap-1.5 cursor-pointer transition-all ${
+                    isAgentRunning
+                      ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                  }`}
+                  title="Run autonomous industrial agent pipeline"
                 >
-                  {isAgentRunning ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-white" />}
-                  <span>{isAgentRunning ? 'Running...' : 'Run Agent'}</span>
+                  {isAgentRunning ? <RefreshCw className="w-3 h-3 animate-spin text-blue-600" /> : <Play className="w-3 h-3 fill-white" />}
+                  <span>{isAgentRunning ? `Step ${agentProgressStep}/7...` : 'Run Agent'}</span>
                 </button>
               </div>
             </div>
 
             {/* Step List Mini Progress Bar */}
             <div className="grid grid-cols-7 gap-1">
-              {[1, 2, 3, 4, 5, 6, 7].map((s) => (
-                <div
-                  key={s}
-                  title={`Step ${s}: ${
-                    s === 1 ? 'OCR & Table Parsing' :
-                    s === 2 ? 'P&ID Vision Analysis' :
-                    s === 3 ? 'SOP RAG Retrieval' :
-                    s === 4 ? 'API 510 Math Verification' :
-                    s === 5 ? 'SOP Deviation Audit' :
-                    s === 6 ? 'Approval Note Synthesis' :
-                    'SHA-256 Ledger Attestation'
-                  }`}
-                  className={`h-1.5 rounded-full transition-all ${
-                    s <= agentProgressStep ? 'bg-blue-600' : 'bg-slate-200'
-                  }`}
-                />
-              ))}
+              {[1, 2, 3, 4, 5, 6, 7].map((s) => {
+                const isCurrent = isAgentRunning && s === agentProgressStep;
+                const isDone = s < agentProgressStep || (!isAgentRunning && agentProgressStep === 7);
+                return (
+                  <div
+                    key={s}
+                    title={`Step ${s}: ${
+                      s === 1 ? 'OCR & Table Parsing' :
+                      s === 2 ? 'P&ID Vision Analysis' :
+                      s === 3 ? 'SOP RAG Retrieval' :
+                      s === 4 ? 'API 510 Math Verification' :
+                      s === 5 ? 'SOP Deviation Audit' :
+                      s === 6 ? 'Approval Note Synthesis' :
+                      'SHA-256 Ledger Attestation'
+                    }`}
+                    className={`h-2 rounded-full transition-all ${
+                      isCurrent
+                        ? 'bg-blue-600 ring-2 ring-blue-400 animate-pulse'
+                        : isDone
+                        ? 'bg-emerald-600'
+                        : 'bg-slate-200'
+                    }`}
+                  />
+                );
+              })}
             </div>
 
             {/* Detailed Expanded Steps (Shot 4 Viewer Reading Trace) */}
             {isAgentTraceExpanded && (
-              <div className="pt-2 border-t border-slate-200/80 space-y-1.5 max-h-48 overflow-y-auto pr-1 text-xs">
+              <div className="pt-2 border-t border-slate-200/80 space-y-1.5 max-h-56 overflow-y-auto pr-1 text-xs">
                 {[
                   { step: 1, title: 'Document OCR & Layout Table Parsing', model: 'PaddleOCR + Tesseract Engine', time: '140ms', detail: 'Extracted NDT ultrasonic table, shell thickness grid C4' },
                   { step: 2, title: 'P&ID Engineering Drawing Computer Vision', model: 'Qwen-2.5-VL-72B-Vision (Local)', time: '380ms', detail: 'Identified Heat Exchanger HX-204 shell nozzle N2 tag' },
@@ -774,35 +830,55 @@ export const AIWorkbench: React.FC = () => {
                   { step: 5, title: 'SOP Non-Conformance & Deviation Audit', model: 'DeepSeek-R1-Distill-70B (Local)', time: '410ms', detail: 'Flagged 18-month proposal against SOP 12-month sour crude statutory limit' },
                   { step: 6, title: 'Formal Technical Approval Note Synthesis', model: 'Qwen-2.5-72B-Instruct (Local)', time: '620ms', detail: 'Drafted 3-point executive note with strict source provenance' },
                   { step: 7, title: 'Cryptographic SHA-256 Ledger Attestation', model: 'Hardware HSM Root of Trust', time: '8ms', detail: 'Zero cloud egress invariant verified & tamper-evident signature generated' },
-                ].map((st) => (
-                  <div 
-                    key={st.step}
-                    className={`p-2 rounded-lg border text-[11px] transition-all flex items-start justify-between gap-2 ${
-                      st.step < agentProgressStep
-                        ? 'bg-emerald-50/50 border-emerald-200 text-slate-800'
-                        : st.step === agentProgressStep
-                        ? 'bg-blue-50 border-blue-300 text-blue-950 font-bold ring-1 ring-blue-300'
-                        : 'bg-white/60 border-slate-200 text-slate-400 opacity-60'
-                    }`}
-                  >
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1.5 font-bold">
-                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-mono ${
-                          st.step <= agentProgressStep ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'
-                        }`}>
-                          {st.step}
-                        </span>
-                        <span>{st.title}</span>
+                ].map((st) => {
+                  const isCurrent = isAgentRunning && st.step === agentProgressStep;
+                  const isDone = st.step < agentProgressStep || (!isAgentRunning && agentProgressStep === 7);
+                  
+                  return (
+                    <div 
+                      key={st.step}
+                      className={`p-2.5 rounded-xl border text-[11px] transition-all flex items-start justify-between gap-2 shadow-2xs ${
+                        isCurrent
+                          ? 'bg-blue-50/90 border-blue-400 text-blue-950 font-bold ring-2 ring-blue-400/30'
+                          : isDone
+                          ? 'bg-emerald-50/50 border-emerald-200 text-slate-800'
+                          : 'bg-white/60 border-slate-200 text-slate-400 opacity-60'
+                      }`}
+                    >
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5 font-bold">
+                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-mono font-bold transition-all ${
+                            isCurrent
+                              ? 'bg-blue-600 text-white animate-pulse'
+                              : isDone
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-slate-200 text-slate-600'
+                          }`}>
+                            {isCurrent ? (
+                              <RefreshCw className="w-3 h-3 animate-spin text-white" />
+                            ) : isDone ? (
+                              <Check className="w-3 h-3 text-white" />
+                            ) : (
+                              st.step
+                            )}
+                          </span>
+                          <span className={isCurrent ? 'text-blue-950 font-black' : ''}>{st.title}</span>
+                          {isCurrent && (
+                            <span className="text-[9px] font-mono font-bold uppercase bg-blue-600 text-white px-1.5 py-0.2 rounded animate-pulse">
+                              RUNNING
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-sans pl-6">{st.detail}</p>
                       </div>
-                      <p className="text-[10px] text-slate-500 font-sans pl-5">{st.detail}</p>
-                    </div>
 
-                    <div className="text-right font-mono text-[9px] flex-shrink-0">
-                      <span className="text-blue-700 font-bold block">{st.model.split(' ')[0]}</span>
-                      <span className="text-slate-400">{st.time}</span>
+                      <div className="text-right font-mono text-[9px] flex-shrink-0">
+                        <span className="text-blue-700 font-bold block">{st.model.split(' ')[0]}</span>
+                        <span className="text-slate-400">{st.time}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -930,17 +1006,18 @@ export const AIWorkbench: React.FC = () => {
                 />
               </div>
 
-              {/* Send Button */}
+              {/* Send / Run Submit Button */}
               <button
                 onClick={handleSendChat}
-                disabled={!chatInput.trim() || isChatTyping}
+                disabled={!chatInput.trim() || isAgentRunning || isChatTyping}
                 className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0 cursor-pointer ${
-                  chatInput.trim() && !isChatTyping
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md'
+                  chatInput.trim() && !isAgentRunning && !isChatTyping
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md ring-2 ring-blue-400/20'
                     : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                 }`}
+                title="Submit Directive & Run Autonomous Agent (Shot 4)"
               >
-                <Send className="w-4 h-4" />
+                {isAgentRunning ? <RefreshCw className="w-4 h-4 animate-spin text-blue-600" /> : <Send className="w-4 h-4" />}
               </button>
 
             </div>
