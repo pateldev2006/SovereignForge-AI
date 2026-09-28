@@ -879,14 +879,16 @@ export const AIWorkbench: React.FC = () => {
                   
                   {/* 1. Agent Trace Header Strip */}
                   {msg.traceSummary && (
-                    <div className="mb-2 pb-1.5 border-b border-slate-100 flex items-center justify-between text-[10px] font-mono">
-                      <span className="flex items-center gap-1.5 font-bold text-blue-700">
-                        <Bot className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-                        <span className="truncate">{msg.traceSummary}</span>
-                      </span>
-                      <span className="text-[8px] bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded font-bold border border-emerald-200 flex-shrink-0 ml-2">
-                        0 EGRESS
-                      </span>
+                    <div className="mb-2 pb-1.5 border-b border-slate-100 text-[10px] font-mono">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-1.5 font-bold text-blue-700 min-w-0">
+                          <Bot className="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <span className="break-words leading-relaxed">{msg.traceSummary}</span>
+                        </div>
+                        <span className="text-[8px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold border border-emerald-200 flex-shrink-0 whitespace-nowrap">
+                          0 EGRESS
+                        </span>
+                      </div>
                     </div>
                   )}
 
