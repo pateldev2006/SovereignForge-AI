@@ -13,12 +13,55 @@ import {
 } from 'lucide-react';
 import { downloadApprovalNotePDF, downloadSampleInspectionReportPDF } from '../../utils/exportUtils';
 
+interface CitationItem {
+  id: number;
+  title: string;
+  page?: string;
+  confidence?: string;
+  sourceIndex?: number;
+}
+
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: Date;
-  citations?: string[];
+  // 1. Agent Trace Strip
+  traceSummary?: string;
+  // 2. Dynamic Model Router Badge
+  routedModel?: { name: string; taskType: string };
+  // 3. Alerts & Scope Warning Panel
+  alert?: { title: string; desc: string; type: 'warning' | 'danger' | 'info' };
+  // 4. Code Block (for Question Type 3: Coding)
+  codeBlock?: { language: string; code: string };
+  // 5. Sandbox Execution Console (for Question Type 3: Coding)
+  sandboxOutput?: {
+    container: string;
+    exitCode: number;
+    executionTime: string;
+    ram: string;
+    network: string;
+    rows?: { cml: string; current: string; rate: string; remLife: string; flagged?: boolean }[];
+  };
+  // 6. Multimodal Visual Graphic (for Question Type 4: Multimodal)
+  multimodalGraphic?: {
+    diagramName: string;
+    highlightTag: string;
+    lineRef: string;
+    spec: string;
+    confidence: string;
+  };
+  // 7. Grounded Citations & Sources Panel
+  citations?: CitationItem[];
+  // 8. Action Buttons Dock
+  actions?: { label: string; actionKey: string; icon?: string }[];
+  // 9. Sovereign Footer Strip
+  footerMeta?: {
+    model: string;
+    latency: string;
+    network: string;
+    auditId: string;
+  };
   isTyping?: boolean;
 }
 
@@ -33,59 +76,199 @@ const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
   {
     id: 'usr-1',
     role: 'user',
-    content: 'What is the remaining wall thickness of Heat Exchanger HX-204 shell side according to the latest inspection report?',
+    content: 'What is the inspection interval for Class C corrosion?',
     timestamp: new Date(Date.now() - 1100000),
   },
   {
     id: 'ast-1',
     role: 'assistant',
-    content: 'Based on the NDT Inspection Report (Doc ID: INSP/2026/HX-204-Q3, dated 15-Jun-2026), the measured wall thickness of HX-204 shell side is **8.2 mm** at the thinnest point (Location: Nozzle N2 vicinity, Grid Reference C4).\n\nThe original design thickness per ASME Section VIII Div.1 is **12.5 mm**, and the minimum retirement thickness per SOP-4.2.1 Rev 4 is **7.8 mm**.\n\n📊 **Corrosion rate:** 0.28 mm/year (calculated from 2019 baseline)\n📅 **Estimated remaining life:** ~1.4 years before retirement threshold\n\n⚠️ This is within the SOP-mandated "Enhanced Monitoring Zone" (< 2mm above retirement). SOP-4.2.1 §6.3 requires inspection frequency to be increased to quarterly.',
+    traceSummary: '🔍 Hybrid RAG Search → 📄 2 sources retrieved → ✅ Answer grounded',
+    routedModel: { name: 'Qwen-2.5-14B', taskType: 'Document Lookup & RAG' },
+    content: 'Class C corrosion requires statutory inspection every **12 months** [1].\nFor newly identified Corrosion Monitoring Locations (CMLs), a **6-month baseline** is mandated for the first operating year [2].',
+    alert: {
+      title: 'Scope Boundary Note',
+      desc: 'Applies strictly to carbon steel service. For stainless steel or high-alloy metallurgy, see SOP-4.2.2.',
+      type: 'warning'
+    },
+    citations: [
+      { id: 1, title: 'SOP-4.2.1 §3.4', page: 'Page 12', confidence: '94%', sourceIndex: 0 },
+      { id: 2, title: 'SOP-4.2.1 Table 2', page: 'Page 15', confidence: '91%', sourceIndex: 2 },
+    ],
+    actions: [
+      { label: 'Download .pdf', actionKey: 'pdf' },
+      { label: 'Submit for Sign-Off', actionKey: 'approve' }
+    ],
+    footerMeta: {
+      model: 'Qwen-2.5-14B',
+      latency: '2.3s',
+      network: '0 outbound (Air-Gapped)',
+      auditId: 'SF-AUD-2026-0927-001'
+    },
     timestamp: new Date(Date.now() - 1050000),
-    citations: ['SOP-4.2.1 §6.3', 'INSP/2026/HX-204-Q3'],
-  },
-  {
-    id: 'usr-2',
-    role: 'user',
-    content: 'Does this mean we need to schedule an early turnaround for HX-204?',
-    timestamp: new Date(Date.now() - 900000),
-  },
-  {
-    id: 'ast-2',
-    role: 'assistant',
-    content: 'Based on the current corrosion rate and SOP guidelines, here is the assessment:\n\n**Immediate turnaround is NOT required**, but early planning is recommended:\n\n1. **Current status:** Wall thickness (8.2mm) is above the retirement limit (7.8mm) with ~1.4 years margin\n2. **SOP-4.2.1 §7.1** states turnaround must be scheduled when remaining life falls below 12 months — you have ~2 months of buffer\n3. **Recommendation:** Schedule turnaround for Q1 2027 (6 months ahead of the normal 5-year cycle)\n\n**Required actions per SOP:**\n- ✅ Increase inspection to quarterly (next due: Sep 2026)\n- ✅ Issue Engineering Change Notice (ECN) for revised turnaround schedule\n- ✅ Notify Approving Authority for budget pre-approval\n\nWould you like me to draft the Turnaround Advance Planning Note for management approval?',
-    timestamp: new Date(Date.now() - 850000),
-    citations: ['SOP-4.2.1 §7.1', 'SOP-4.2.1 §6.3', 'Industrial Turnaround Policy Rev 3'],
   },
 ];
 
-// Response bank for questions
-const AI_RESPONSE_BANK: { keywords: string[]; response: string; citations: string[] }[] = [
+// Comprehensive Response bank supporting all 5 Question Types per Spec
+const AI_RESPONSE_BANK: { keywords: string[]; buildResponse: (query: string) => Partial<ChatMessage> }[] = [
+  // ─── Question Type 1: Document Question (RAG Lookup) ───
   {
-    keywords: ['turnaround', 'plan', 'draft', 'planning note'],
-    response: 'I\'ve drafted the Turnaround Advance Planning Note (Ref: MECH/2026/TA-HX204-ADV).\n\n**Key contents:**\n- Equipment: HX-204 Shell & Tube Heat Exchanger\n- Proposed date: Q1 2027 (Jan-Mar window)\n- Estimated duration: 14 days\n- Budget estimate: ₹2.8 Cr (tube bundle replacement + shell weld overlay)\n- Critical path: Tube bundle procurement (12-week lead time)\n\nThe note has been formatted per Technical Services Directorate template and is ready for your review before submission to the Approving Authority queue.\n\nWould you like me to send it to Dr. Vikram Shetty\'s approval queue?',
-    citations: ['Industrial Turnaround Policy Rev 3', 'PROC/Budget-2026'],
+    keywords: ['class c', 'inspection interval', 'corrosion interval', 'sop-4.2.1 §3.4', 'frequency'],
+    buildResponse: () => ({
+      traceSummary: '🔍 Hybrid RAG Search → 📄 2 sources retrieved → ✅ Answer grounded',
+      routedModel: { name: 'Qwen-2.5-14B', taskType: 'Document Lookup & RAG' },
+      content: 'Class C corrosion requires statutory inspection every **12 months** [1].\nFor newly identified Corrosion Monitoring Locations (CMLs), a **6-month baseline** is mandated for the first operating year [2].',
+      alert: {
+        title: 'Scope Boundary Note',
+        desc: 'Applies strictly to carbon steel service. For stainless steel or high-alloy metallurgy, see SOP-4.2.2.',
+        type: 'warning'
+      },
+      citations: [
+        { id: 1, title: 'SOP-4.2.1 §3.4', page: 'Page 12', confidence: '94%', sourceIndex: 0 },
+        { id: 2, title: 'SOP-4.2.1 Table 2', page: 'Page 15', confidence: '91%', sourceIndex: 2 }
+      ],
+      actions: [
+        { label: 'Download .pdf', actionKey: 'pdf' },
+        { label: 'Submit for Sign-Off', actionKey: 'approve' }
+      ],
+      footerMeta: {
+        model: 'Qwen-2.5-14B',
+        latency: '2.3s',
+        network: '0 outbound (Air-Gapped)',
+        auditId: `SF-AUD-2026-${Math.floor(10000 + Math.random() * 90000)}`
+      }
+    })
   },
-  {
-    keywords: ['sop', 'standard', 'procedure', 'compliance'],
-    response: 'Here are the relevant SOPs for your current context:\n\n1. **SOP-4.2.1** (Static Equipment Inspection & Maintenance) — Rev 4, 120 pages\n   - §6.3: Enhanced monitoring criteria\n   - §7.1: Turnaround scheduling thresholds\n   - §8.2: NDT methodology requirements\n\n2. **SOP-3.1.7** (Corrosion Management Program) — Rev 6\n   - §4.1: Corrosion rate calculation methodology\n   - §5.2: Risk-based inspection intervals\n\n3. **OISD-STD-129** (Inspection of Static Equipment)\n   - Clause 7: Minimum thickness criteria\n\nAll SOPs are indexed in the local vector store. Click any reference to view the exact source passage.',
-    citations: ['SOP-4.2.1 Rev 4', 'SOP-3.1.7 Rev 6', 'OISD-STD-129'],
-  },
-  {
-    keywords: ['corrosion', 'rate', 'thickness', 'measurement'],
-    response: 'The corrosion rate analysis for HX-204 based on historical NDT data:\n\n📊 **Corrosion Rate Trend:**\n| Year | Thickness (mm) | Rate (mm/yr) |\n|------|---------------|-------------|\n| 2019 | 10.3 | — (baseline) |\n| 2021 | 9.7 | 0.30 |\n| 2023 | 9.1 | 0.30 |\n| 2025 | 8.5 | 0.30 |\n| 2026 | 8.2 | 0.28 |\n\nThe rate has slightly decreased (0.28 mm/yr vs historical 0.30 mm/yr), possibly due to the inhibitor dosing change in 2024. However, SOP-4.2.1 §6.1 mandates using the **worst-case historical rate** (0.30 mm/yr) for remaining life calculations.\n\n**At 0.30 mm/yr:** Retirement threshold (7.8mm) reached in ~1.33 years (Feb 2028)\n**At 0.28 mm/yr:** Retirement threshold reached in ~1.43 years (Mar 2028)',
-    citations: ['NDT Historical Database', 'SOP-4.2.1 §6.1'],
-  },
-  {
-    keywords: ['approve', 'approval', 'send', 'submit', 'queue'],
-    response: 'I\'ve prepared the submission package for the Approving Authority queue:\n\n📋 **Approval Package Contents:**\n1. Technical Approval Note (MECH/2026/HX-204-APPR)\n2. NDT Inspection Report Summary\n3. SOP Deviation Analysis (6-month overhaul variance)\n4. Cost estimate and turnaround schedule\n5. Risk assessment matrix\n\n**Routing:** → Dr. Vikram Shetty (VP Technical) → Budget Committee\n**Priority:** HIGH (equipment integrity concern)\n**Digital signature:** Required (RSA-2048 + employee smart card)\n\nThe package is ready in the Approval Queue. The Approving Authority will receive a notification on their dashboard.\n\n✅ All provenance chains are intact — every claim traces back to source documents.',
-    citations: ['MECH/2026/HX-204-APPR', 'Approval Workflow SOP-9.1'],
-  },
-];
 
-const DEFAULT_AI_RESPONSE = {
-  response: 'I\'ve processed your query against the local document store and SOP knowledge base. Based on the indexed materials for CDU/VDU Unit 03 and Heat Exchanger HX-204:\n\nThe information you\'re looking for requires cross-referencing multiple source documents. I\'ve identified 3 relevant passages from the ingested inspection reports and 2 SOP sections that address this topic.\n\nWould you like me to:\n1. Show the detailed source excerpts with provenance links?\n2. Generate a formal summary note for the record?\n3. Flag any SOP deviations related to your query?',
-  citations: ['Local Vector Store', 'SOP Knowledge Base'],
-};
+  // ─── Question Type 3: Coding Question (Python Sandbox Execution) ───
+  {
+    keywords: ['python', 'script', 'code', 'calculate remaining', 'wall thickness', 'excel', 'pandas', 'flag'],
+    buildResponse: () => ({
+      traceSummary: 'Step 1: 📊 Read Excel (0.8s) → Step 2: 🧠 Route to Coder (0.2s) → Step 3: 💻 Code Gen (3.4s) → Step 4: 🐳 Sandbox Exec (2.1s) → Step 5: ✅ Verified (0.4s)',
+      routedModel: { name: 'Qwen2.5-Coder-32B', taskType: 'Code Generation & Isolated Sandbox Execution' },
+      content: 'Here is the auditable Python calculation script executed inside the isolated container (`python:3.11-slim`, `--network none`). All formulas strictly adhere to ASME Section VIII & SOP-4.2.1 §6.1:',
+      codeBlock: {
+        language: 'python',
+        code: `import pandas as pd
+THRESHOLD = 7.8  # Statutory retirement threshold (mm per SOP-4.2.1)
+
+df = pd.read_excel("ut_readings.xlsx")
+df["Corrosion_Rate"] = (df["Previous"] - df["Current"]) / 0.5
+df["Remaining_Life"] = (df["Current"] - THRESHOLD) / df["Corrosion_Rate"]
+df["Critical_Flag"] = df["Current"] <= (THRESHOLD + 0.5)
+
+flagged = df[df["Critical_Flag"]]
+print(f"Total CMLs Flagged for Immediate Action: {len(flagged)}")
+print(flagged[["CML", "Current", "Corrosion_Rate", "Remaining_Life"]])`
+      },
+      sandboxOutput: {
+        container: 'python:3.11-slim (Isolated Docker)',
+        exitCode: 0,
+        executionTime: '0.28s',
+        ram: '42 MB',
+        network: '0 bytes (Network: none)',
+        rows: [
+          { cml: 'CML-15', current: '6.1 mm', rate: '0.80 mm/yr', remLife: '0.00 yrs', flagged: true },
+          { cml: 'CML-22', current: '6.3 mm', rate: '0.60 mm/yr', remLife: '0.00 yrs', flagged: true },
+          { cml: 'HX204-C4', current: '8.2 mm', rate: '0.28 mm/yr', remLife: '1.43 yrs', flagged: true }
+        ]
+      },
+      actions: [
+        { label: 'Download .py', actionKey: 'pyscript' },
+        { label: 'Download .xlsx', actionKey: 'xlsx' },
+        { label: 'Re-run Sandbox', actionKey: 'rerun' }
+      ],
+      footerMeta: {
+        model: 'Qwen2.5-Coder-32B',
+        latency: '3.8s',
+        network: '0 outbound (Air-Gapped)',
+        auditId: `SF-AUD-2026-${Math.floor(10000 + Math.random() * 90000)}`
+      }
+    })
+  },
+
+  // ─── Question Type 4: Multimodal Question (P&ID Drawing Inspection) ───
+  {
+    keywords: ['valve tag', 'battery limit', '6"-cs-1501', 'p&id', 'drawing', 'psv-304', 'gv-1501', 'valve'],
+    buildResponse: () => ({
+      traceSummary: 'Step 1: 👁️ VLM Visual Analysis (4.8s, Qwen2.5-VL-72B @ 2400x1800) → Step 2: 🔍 RAG Cross-check (1.0s) → ✅ Tag Grounded',
+      routedModel: { name: 'Qwen2.5-VL-72B-Vision', taskType: 'Multimodal Drawing OCR & Spatial Grounding' },
+      content: 'The valve on line **6"-CS-1501** near the unit battery limit is **GV-1501** (Gate Valve, 6", 150# RF, Carbon Steel) [1].\n\nAdditionally, the primary pressure safety relief valve on the HX-204 shell inlet is **PSV-304** (Set Pressure: **14.2 kg/cm²g**, Design Margin: 110%) [2].',
+      multimodalGraphic: {
+        diagramName: 'P&ID Engineering Drawing: CDU-03 Complex (Rev C)',
+        highlightTag: 'GV-1501 & PSV-304',
+        lineRef: 'Line 6"-CS-1501 (Battery Limit)',
+        spec: '6" Gate Valve, 150# RF, CS • Setpoint: 14.2 kg/cm²g',
+        confidence: '94.2% OCR Spatial Confidence'
+      },
+      citations: [
+        { id: 1, title: 'P&ID_CDU03_Unit_03.png', page: 'Battery Limit Area', confidence: '94.2%', sourceIndex: 1 },
+        { id: 2, title: 'Master Valve Schedule Rev C', page: 'Row 42 (GV-1501)', confidence: '92.0%', sourceIndex: 2 }
+      ],
+      actions: [
+        { label: 'Inspect P&ID Drawing', actionKey: 'drawing' },
+        { label: 'Export Tag Card', actionKey: 'card' }
+      ],
+      footerMeta: {
+        model: 'Qwen2.5-VL-72B-Vision',
+        latency: '5.8s',
+        network: '0 outbound (Air-Gapped)',
+        auditId: `SF-AUD-2026-${Math.floor(10000 + Math.random() * 90000)}`
+      }
+    })
+  },
+
+  // ─── Question Type 5: Model Auto-Selection Proof (Decision Log) ───
+  {
+    keywords: ['router', 'auto-selection', 'decision log', 'model selection', 'routing proof', 'workload'],
+    buildResponse: () => ({
+      traceSummary: '🧠 Intent Classifier Engine → 🎯 Task Classification → 🚀 Local Model Dispatch',
+      routedModel: { name: 'SovereignForge Dynamic Model Router', taskType: 'Zero-Egress Intelligent Workload Routing' },
+      content: '**AIR-GAPPED DYNAMIC MODEL ROUTING AUDIT LOG**\n\nEvery prompt is classified locally by semantic intent and dispatched to the optimal specialized local neural model without any cloud egress:\n\n• **Query A:** *"Write Python script..."* ➔ **Intent:** Coding/Sandbox Math ➔ **Model:** `Qwen2.5-Coder-32B`\n• **Query B:** *"What is inspection interval..."* ➔ **Intent:** Document/RAG ➔ **Model:** `Qwen-2.5-14B`\n• **Query C:** *"What valve tag on P&ID..."* ➔ **Intent:** Multimodal Vision ➔ **Model:** `Qwen2.5-VL-72B`\n• **Query D:** *"Draft approval note & audit..."* ➔ **Intent:** Multi-Step Reasoning ➔ **Model:** `DeepSeek-R1 + Qwen-2.5-72B`\n\n🛡️ **Invariant:** Zero external internet requests. 100% on-premise execution.',
+      citations: [
+        { id: 1, title: 'Local Model Registry', page: '4 Models Active', confidence: '100%', sourceIndex: 0 },
+        { id: 2, title: 'Network Egress Firewall Log', page: '0 Bytes Outbound', confidence: '100%', sourceIndex: 1 }
+      ],
+      footerMeta: {
+        model: 'Local Model Router v2',
+        latency: '0.12s',
+        network: '0 outbound (Air-Gapped)',
+        auditId: `SF-AUD-2026-${Math.floor(10000 + Math.random() * 90000)}`
+      }
+    })
+  },
+
+  // ─── Question Type 2 / Default Agentic Task ───
+  {
+    keywords: ['draft', 'approval', 'note', 'findings', 'turnaround', 'plan', 'sop', 'corrosion'],
+    buildResponse: () => ({
+      traceSummary: 'Step 1: 📄 OCR (PaddleOCR) → Step 2: 👁️ Vision (Qwen2.5-VL) → Step 3: 🔍 RAG (BGE-M3) → Step 4: 🧮 Math (SymPy) → Step 5: 🧠 Audit (R1) → Step 6: 📝 Draft (Qwen-2.5-72B)',
+      routedModel: { name: 'DeepSeek-R1 + Qwen-2.5-72B', taskType: 'Multi-Step Autonomous Agent' },
+      content: '**FORMAL TECHNICAL APPROVAL NOTE — CORROSION FINDINGS**\n*Ref: MECH/2026/HX-204-APPR*\n\n**1. Executive Summary:** NDT ultrasonic thickness survey on Heat Exchanger HX-204 shell side reveals minimum wall thickness of **8.2 mm** [1] against original design thickness 12.5 mm (Statutory retirement threshold: 7.8 mm).\n\n**2. SOP Non-Conformance:** Proposed field 18-month turnaround interval violates the 12-month limit mandated by **SOP-4.2.1 §7.1** [2] for sour crude service.\n\n**3. Recommendation:** Advance turnaround window to **Q1 2027** with pre-allocated tube bundle procurement per **SOP-4.2.1 §4.3.4** [3].',
+      alert: {
+        title: 'SOP Deviation Detected: +6M Overhaul Variance',
+        desc: 'Proposed 18-month turnaround interval violates the 12-month limit mandated by SOP-4.2.1 §7.1 for sour crude service.',
+        type: 'danger'
+      },
+      citations: [
+        { id: 1, title: 'sample_inspection_report.pdf', page: 'Page 4 — Grid C4 NDT Data', confidence: '98.4%', sourceIndex: 1 },
+        { id: 2, title: 'SOP-4.2.1 Rev 4', page: 'Page 18 (§7.1) — Sour Crude 12-Mo Limit', confidence: '96.1%', sourceIndex: 0 },
+        { id: 3, title: 'SOP-4.2.1 Rev 4', page: 'Page 22 (§4.3.4) — Tube Bundle Replacement', confidence: '93.8%', sourceIndex: 2 }
+      ],
+      actions: [
+        { label: 'Word (.docx)', actionKey: 'docx' },
+        { label: 'Signed PDF', actionKey: 'pdf' },
+        { label: 'Edit Draft', actionKey: 'edit' },
+        { label: 'Submit for Sign-Off', actionKey: 'approve' }
+      ],
+      footerMeta: {
+        model: 'Qwen2.5-VL ➔ DeepSeek-R1 ➔ Qwen-2.5-72B',
+        latency: '12.4s',
+        network: '0 outbound (Air-Gapped)',
+        auditId: `SF-AUD-2026-${Math.floor(10000 + Math.random() * 90000)}`
+      }
+    })
+  }
+];
 
 // Task Templates definition per Spec
 const TASK_TEMPLATES = [
@@ -309,9 +492,32 @@ export const AIWorkbench: React.FC = () => {
       const assistantMsg: ChatMessage = {
         id: `ast-${Date.now()}`,
         role: 'assistant',
+        traceSummary: 'Step 1: 📄 OCR (PaddleOCR) → Step 2: 👁️ Vision (Qwen2.5-VL) → Step 3: 🔍 RAG (BGE-M3) → Step 4: 🧮 Math (SymPy) → Step 5: 🧠 Audit (R1) → Step 6: 📝 Draft (Qwen-2.5-72B)',
+        routedModel: { name: 'DeepSeek-R1 + Qwen-2.5-72B', taskType: 'Autonomous Multi-Step Agent' },
+        alert: {
+          title: 'SOP Deviation Detected: +6M Overhaul Variance',
+          desc: 'Proposed field 18-month turnaround interval violates the 12-month statutory limit mandated by SOP-4.2.1 §7.1 for sour crude service.',
+          type: 'danger'
+        },
         content: `**Autonomous Compliance Analysis Complete (7/7 Steps)**\n\n• **Ingested Document:** NDT Inspection Report (\`INSP/2026/HX-204-Q3\`) & \`SOP-4.2.1 Rev 4\`\n• **Measured Wall Thickness:** **8.2 mm** (Retirement Threshold: 7.8 mm, Remaining Life: ~1.43 yrs)\n• ⚠️ **Critical SOP Deviation:** Turnaround proposal (18 months) exceeds 12-month limit mandated by \`SOP-4.2.1 §7.1\` for sour crude service.\n• **Generated Output:** Formal Technical Approval Note (\`MECH/2026/HX-204-APPR\`) ready in Live Deliverable Studio.`,
+        citations: [
+          { id: 1, title: 'sample_inspection_report.pdf', page: 'Page 4 — Grid C4 NDT Data', confidence: '98.4%', sourceIndex: 1 },
+          { id: 2, title: 'SOP-4.2.1 Rev 4', page: 'Page 18 (§7.1) — Sour Crude 12-Mo Limit', confidence: '96.1%', sourceIndex: 0 },
+          { id: 3, title: 'SOP-4.2.1 Rev 4', page: 'Page 22 (§4.3.4) — Tube Bundle Replacement', confidence: '93.8%', sourceIndex: 2 }
+        ],
+        actions: [
+          { label: 'Word (.docx)', actionKey: 'docx' },
+          { label: 'Signed PDF', actionKey: 'pdf' },
+          { label: 'Edit Draft', actionKey: 'edit' },
+          { label: 'Submit for Sign-Off', actionKey: 'approve' }
+        ],
+        footerMeta: {
+          model: 'Qwen2.5-VL ➔ DeepSeek-R1 ➔ Qwen-2.5-72B',
+          latency: '12.4s',
+          network: '0 outbound (Air-Gapped)',
+          auditId: `SF-AUD-2026-${Math.floor(10000 + Math.random() * 90000)}`
+        },
         timestamp: new Date(),
-        citations: ['INSP/2026/HX-204-Q3 p.4', 'SOP-4.2.1 §7.1', 'SOP-4.2.1 §4.3.4']
       };
       setChatMessages(prev => [...prev, assistantMsg]);
     });
@@ -327,11 +533,11 @@ export const AIWorkbench: React.FC = () => {
     const trimmed = chatInput.trim();
     if (!trimmed || isAgentRunning || isChatTyping) return;
 
-    // Check if input is an actionable directive or files are attached
-    const isDirective = selectedFiles.length > 0 || 
-      /draft|approval|note|sop|corrosion|findings|turnaround|audit|report|inspect|check|overhaul|thickness/i.test(trimmed);
+    // Check if input is an actionable multi-step agent directive
+    const isMultiStepDirective = selectedFiles.length > 0 && 
+      /draft|approval note|turnaround plan|generate deck/i.test(trimmed);
 
-    if (isDirective) {
+    if (isMultiStepDirective) {
       handleExecuteAgent(trimmed);
       return;
     }
@@ -346,21 +552,40 @@ export const AIWorkbench: React.FC = () => {
     setChatInput('');
     setIsChatTyping(true);
 
-    const delay = 1200 + Math.random() * 800;
+    const delay = 1000 + Math.random() * 600;
     setTimeout(() => {
       const lowerInput = trimmed.toLowerCase();
       const matched = AI_RESPONSE_BANK.find(r =>
         r.keywords.some(kw => lowerInput.includes(kw.toLowerCase()))
       );
-      const responseData = matched || DEFAULT_AI_RESPONSE;
+
+      const responsePayload = matched ? matched.buildResponse(trimmed) : {
+        traceSummary: '🔍 Hybrid RAG Search → 📄 2 sources retrieved → ✅ Answer grounded',
+        routedModel: { name: 'Qwen-2.5-14B', taskType: 'Document Lookup & RAG' },
+        content: `I've analyzed **"${trimmed}"** against the local indexed repository and static equipment SOPs.\n\nAll data is processed strictly on-premise with zero cloud egress. Click any citation below to inspect the verified source text.`,
+        citations: [
+          { id: 1, title: 'SOP-4.2.1 Rev 4', page: 'Page 12', confidence: '94%', sourceIndex: 0 },
+          { id: 2, title: 'sample_inspection_report.pdf', page: 'Page 4', confidence: '98%', sourceIndex: 1 }
+        ],
+        actions: [
+          { label: 'Download .pdf', actionKey: 'pdf' },
+          { label: 'Submit for Sign-Off', actionKey: 'approve' }
+        ],
+        footerMeta: {
+          model: 'Qwen-2.5-14B',
+          latency: '1.8s',
+          network: '0 outbound (Air-Gapped)',
+          auditId: `SF-AUD-2026-${Math.floor(10000 + Math.random() * 90000)}`
+        }
+      };
 
       const aiMsg: ChatMessage = {
         id: `ast-${Date.now()}`,
         role: 'assistant',
-        content: responseData.response,
         timestamp: new Date(),
-        citations: responseData.citations,
-      };
+        ...responsePayload
+      } as ChatMessage;
+
       setChatMessages(prev => [...prev, aiMsg]);
       setIsChatTyping(false);
     }, delay);
@@ -627,13 +852,53 @@ export const AIWorkbench: React.FC = () => {
                   </div>
                 )}
 
-                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
+                <div className={`max-w-[90%] md:max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
                   msg.role === 'user'
                     ? 'bg-blue-600 text-white rounded-br-md shadow-xs'
                     : msg.role === 'system'
                     ? 'bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-mono italic'
-                    : 'bg-white text-slate-800 border border-slate-200 shadow-xs rounded-bl-md'
+                    : 'bg-white text-slate-800 border border-slate-200 shadow-sm rounded-bl-md'
                 }`}>
+                  
+                  {/* 1. Agent Trace Header Strip */}
+                  {msg.traceSummary && (
+                    <div className="mb-2 pb-1.5 border-b border-slate-100 flex items-center justify-between text-[10px] font-mono">
+                      <span className="flex items-center gap-1.5 font-bold text-blue-700">
+                        <Bot className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                        <span className="truncate">{msg.traceSummary}</span>
+                      </span>
+                      <span className="text-[8px] bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded font-bold border border-emerald-200 flex-shrink-0 ml-2">
+                        0 EGRESS
+                      </span>
+                    </div>
+                  )}
+
+                  {/* 2. Dynamic Model Router Badge */}
+                  {msg.routedModel && (
+                    <div className="mb-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-50 border border-purple-200 text-[10px] font-mono font-bold text-purple-900">
+                      <Cpu className="w-3 h-3 text-purple-600" />
+                      <span>🧠 Routed to: <strong>{msg.routedModel.name}</strong> ({msg.routedModel.taskType})</span>
+                    </div>
+                  )}
+
+                  {/* 3. Alerts & Scope Warning Panel */}
+                  {msg.alert && (
+                    <div className={`mb-2.5 p-2.5 rounded-xl border text-[11px] leading-snug flex items-start gap-2 ${
+                      msg.alert.type === 'danger' 
+                        ? 'bg-rose-50 border-rose-300 text-rose-950' 
+                        : 'bg-amber-50 border-amber-300 text-amber-950'
+                    }`}>
+                      <AlertTriangle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                        msg.alert.type === 'danger' ? 'text-rose-600 animate-pulse' : 'text-amber-600'
+                      }`} />
+                      <div>
+                        <strong className="block font-bold mb-0.5">{msg.alert.title}</strong>
+                        <p>{msg.alert.desc}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4. Primary Prose Content */}
                   {msg.content.split('\n').map((line, i) => {
                     const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                     return (
@@ -645,28 +910,219 @@ export const AIWorkbench: React.FC = () => {
                     );
                   })}
 
-                  {/* Citations */}
+                  {/* 5. Code Block Component (Question Type 3: Coding Sandbox) */}
+                  {msg.codeBlock && (
+                    <div className="my-2.5 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden text-[10px] font-mono text-emerald-300 shadow-inner">
+                      <div className="px-3 py-1.5 bg-slate-800 border-b border-slate-700 flex items-center justify-between text-slate-300">
+                        <span className="flex items-center gap-1.5 font-bold">
+                          <FileCode2 className="w-3.5 h-3.5 text-blue-400" />
+                          <span>Python 3.11 Calculation Script</span>
+                        </span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(msg.codeBlock?.code || '');
+                            showToast('Code Copied', 'Copied Python script to clipboard.', 'success');
+                          }}
+                          className="text-[9px] hover:text-white text-slate-400 bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                        >
+                          Copy Code
+                        </button>
+                      </div>
+                      <pre className="p-3 overflow-x-auto leading-relaxed">
+                        <code>{msg.codeBlock.code}</code>
+                      </pre>
+                    </div>
+                  )}
+
+                  {/* 6. Sandbox Execution Output Console (Question Type 3) */}
+                  {msg.sandboxOutput && (
+                    <div className="my-2.5 rounded-xl bg-slate-950 border border-slate-800 p-3 text-[10px] font-mono text-slate-200 shadow-md space-y-2">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 text-[9px] text-emerald-400 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                          <span>SANDBOX CONTAINER: {msg.sandboxOutput.container}</span>
+                        </span>
+                        <span>EXIT CODE: {msg.sandboxOutput.exitCode} (SUCCESS)</span>
+                      </div>
+
+                      {msg.sandboxOutput.rows && msg.sandboxOutput.rows.length > 0 && (
+                        <div className="border border-slate-800 rounded-lg overflow-hidden bg-slate-900/70">
+                          <table className="w-full text-left text-[10px]">
+                            <thead className="bg-slate-800/90 text-slate-300 text-[9px] uppercase">
+                              <tr>
+                                <th className="p-1.5">CML Location</th>
+                                <th className="p-1.5">Measured</th>
+                                <th className="p-1.5">Corrosion Rate</th>
+                                <th className="p-1.5">Rem. Life</th>
+                                <th className="p-1.5 text-right">Audit Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800 text-[10px]">
+                              {msg.sandboxOutput.rows.map((r, ri) => (
+                                <tr key={ri} className={r.flagged ? 'bg-rose-950/40 text-rose-200' : 'text-slate-300'}>
+                                  <td className="p-1.5 font-bold font-mono">{r.cml}</td>
+                                  <td className="p-1.5">{r.current}</td>
+                                  <td className="p-1.5">{r.rate}</td>
+                                  <td className="p-1.5 font-bold">{r.remLife}</td>
+                                  <td className="p-1.5 text-right font-bold">
+                                    <span className="px-1.5 py-0.2 rounded bg-rose-900/90 text-rose-200 border border-rose-700 text-[9px]">
+                                      CRITICAL ACTION
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-[9px] text-slate-400 pt-1 border-t border-slate-800">
+                        <span>Execution: <strong>{msg.sandboxOutput.executionTime}</strong> • RAM: <strong>{msg.sandboxOutput.ram}</strong></span>
+                        <span className="text-emerald-400 font-bold">{msg.sandboxOutput.network}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 7. Multimodal Graphic Component (Question Type 4) */}
+                  {msg.multimodalGraphic && (
+                    <div className="my-2.5 rounded-xl border border-blue-200 bg-blue-50/40 p-3 space-y-2 shadow-xs">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-blue-900 border-b border-blue-100 pb-1">
+                        <span className="flex items-center gap-1.5">
+                          <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
+                          <span>{msg.multimodalGraphic.diagramName}</span>
+                        </span>
+                        <span className="text-[9px] font-mono text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-200">
+                          {msg.multimodalGraphic.confidence}
+                        </span>
+                      </div>
+
+                      {/* Interactive P&ID Visual Schematic with Highlighted Tag */}
+                      <div className="p-3 bg-white border border-slate-300 rounded-lg font-mono text-[11px] text-slate-800 relative overflow-hidden">
+                        <div className="text-[9px] text-slate-400 mb-1">BATTERY LIMIT INTERCONNECT — LINE 6"-CS-1501</div>
+                        <div className="flex items-center gap-3 my-2">
+                          <div className="h-0.5 bg-slate-400 flex-1 relative">
+                            <div className="absolute -top-3 left-4 text-[9px] font-bold text-slate-600">6"-CS-1501-A1A</div>
+                          </div>
+                          
+                          {/* Highlighted Bounding Box Target */}
+                          <div 
+                            onClick={() => openSourceViewer(1)}
+                            className="px-2.5 py-1.5 bg-blue-100 border-2 border-blue-500 rounded-lg text-blue-950 font-bold text-center cursor-pointer shadow-sm hover:bg-blue-200 transition-all group"
+                            title="Click to zoom into P&ID Drawing Source"
+                          >
+                            <div className="text-[10px] text-blue-800 font-black flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping"></span>
+                              {msg.multimodalGraphic.highlightTag}
+                            </div>
+                            <div className="text-[8px] text-blue-700 font-sans">{msg.multimodalGraphic.spec}</div>
+                          </div>
+
+                          <div className="h-0.5 bg-slate-400 flex-1"></div>
+                        </div>
+                        <div className="text-[9px] text-slate-500 italic mt-1 flex items-center justify-between">
+                          <span>📍 Spatial Anchor: Coordinates (X: 1420, Y: 890)</span>
+                          <span className="text-blue-600 font-bold hover:underline cursor-pointer" onClick={() => openSourceViewer(1)}>
+                            [Click to inspect drawing]
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 8. Grounded Citations & Sources Shelf */}
                   {msg.citations && msg.citations.length > 0 && (
+                    <div className="mt-2.5 pt-2 border-t border-slate-100 space-y-1.5">
+                      <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                        VERIFIED GROUNDED SOURCES:
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                        {msg.citations.map((cite, i) => (
+                          <button
+                            key={i}
+                            onClick={() => openSourceViewer(cite.sourceIndex ?? i)}
+                            className="text-left p-2 rounded-lg bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition-all flex items-center justify-between cursor-pointer group"
+                            title={`Open ${cite.title} in source viewer`}
+                          >
+                            <div className="min-w-0 pr-2">
+                              <span className="font-bold text-[10px] text-slate-800 group-hover:text-blue-700 block truncate">
+                                [{cite.id ?? i + 1}] {cite.title}
+                              </span>
+                              {cite.page && <span className="text-[9px] text-slate-500 block font-mono">{cite.page}</span>}
+                            </div>
+                            {cite.confidence && (
+                              <span className="text-[8px] font-mono font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200 flex-shrink-0">
+                                {cite.confidence}
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 9. Action Buttons Dock */}
+                  {msg.actions && msg.actions.length > 0 && (
                     <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
-                      <span className="text-[9px] font-mono font-bold text-slate-400">PROVENANCE:</span>
-                      {msg.citations.map((cite, i) => (
+                      {msg.actions.map((act, i) => (
                         <button
                           key={i}
-                          onClick={() => openSourceViewer(i)}
-                          className="citation-badge"
+                          onClick={() => {
+                            if (act.actionKey === 'pdf') {
+                              if (currentTask?.deliverable) {
+                                downloadApprovalNotePDF(currentTask.deliverable, currentUser.name);
+                              } else {
+                                downloadSampleInspectionReportPDF();
+                              }
+                              showToast('PDF Exported', 'Generated and saved PDF deliverable.', 'success');
+                            } else if (act.actionKey === 'docx') {
+                              showToast('Word Exported', 'Downloaded Word technical note (.docx).', 'info');
+                            } else if (act.actionKey === 'pyscript') {
+                              const blob = new Blob([msg.codeBlock?.code || ''], { type: 'text/x-python' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = 'calc_hx204_integrity.py';
+                              a.click();
+                              URL.revokeObjectURL(url);
+                              showToast('Script Downloaded', 'Saved calc_hx204_integrity.py to Downloads.', 'success');
+                            } else if (act.actionKey === 'approve') {
+                              showToast('Dispatched to Approver', 'Routed to Dr. Vikram Shetty for RSA digital signature.', 'success');
+                            } else if (act.actionKey === 'drawing') {
+                              openSourceViewer(1);
+                            } else {
+                              showToast('Action Triggered', `Executed ${act.label}.`, 'info');
+                            }
+                          }}
+                          className="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-700 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
                         >
-                          [{i + 1}] {cite}
+                          <Download className="w-3 h-3" />
+                          <span>{act.label}</span>
                         </button>
                       ))}
                     </div>
                   )}
 
-                  <div className={`mt-1.5 text-[9px] font-mono flex items-center justify-between ${
+                  {/* 10. Cryptographic Sovereign Footer Strip */}
+                  <div className={`mt-2 pt-1.5 border-t border-slate-100 text-[9px] font-mono flex items-center justify-between ${
                     msg.role === 'user' ? 'text-blue-200' : 'text-slate-400'
                   }`}>
                     <span>{msg.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
-                    {msg.role === 'assistant' && <span>✓ Local GPU Verified</span>}
+                    {msg.role === 'assistant' && (
+                      <div className="flex items-center gap-2">
+                        {msg.footerMeta ? (
+                          <>
+                            <span>Model: <strong className="text-slate-600">{msg.footerMeta.model}</strong></span>
+                            <span>• Latency: <strong>{msg.footerMeta.latency}</strong></span>
+                            <span className="text-emerald-700 font-bold">• {msg.footerMeta.network}</span>
+                            <span className="text-blue-700 font-bold">• {msg.footerMeta.auditId}</span>
+                          </>
+                        ) : (
+                          <span>✓ Local GPU Verified (0 Egress)</span>
+                        )}
+                      </div>
+                    )}
                   </div>
+
                 </div>
 
                 {msg.role === 'user' && (
@@ -1022,25 +1478,26 @@ export const AIWorkbench: React.FC = () => {
 
             </div>
 
-            {/* Quick Starter Chips */}
+            {/* Quick Starter Chips (5 Core Question Types per Spec) */}
             <div className="flex items-center gap-1.5 overflow-x-auto pt-1">
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex-shrink-0">Quick:</span>
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex-shrink-0">Quick Demo:</span>
               {[
-                'Draft an approval note for the corrosion findings. Check against our SOPs.',
-                'What SOPs apply to HX-204?',
-                'Show corrosion rate trend',
-                'Draft turnaround plan',
-                'Audit P&ID PSV-304'
-              ].map((q, i) => (
+                { label: '📝 Agentic Task (Shot 3/4)', query: 'Draft an approval note for the corrosion findings. Check against our SOPs.' },
+                { label: '📄 Type 1: RAG Question', query: 'What is the inspection interval for Class C corrosion?' },
+                { label: '💻 Type 3: Coding Sandbox', query: 'Write a Python script to calculate remaining wall thickness and flag anything below 7.8mm.' },
+                { label: '👁️ Type 4: Multimodal P&ID', query: 'What\'s the valve tag on line 6"-CS-1501 near the battery limit?' },
+                { label: '🧠 Type 5: Router Proof', query: 'Show Model Auto-Selection Decision Log' },
+              ].map((item, i) => (
                 <button
                   key={i}
                   onClick={() => {
-                    setChatInput(q);
+                    setChatInput(item.query);
                     setTimeout(() => chatInputRef.current?.focus(), 50);
                   }}
-                  className="flex-shrink-0 px-2 py-0.5 rounded-lg bg-slate-50 hover:bg-blue-50 border border-slate-200 text-[10px] font-semibold text-slate-700 hover:text-blue-700 whitespace-nowrap cursor-pointer"
+                  className="flex-shrink-0 px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-[10px] font-semibold text-slate-700 hover:text-blue-700 whitespace-nowrap cursor-pointer transition-all shadow-2xs"
+                  title={item.query}
                 >
-                  {q}
+                  <span>{item.label}</span>
                 </button>
               ))}
             </div>
