@@ -4,7 +4,7 @@ import { PageId } from '../../types';
 import { 
   Bot, FileText, BookOpen, CheckSquare, ClipboardCheck, Terminal, 
   History, ShieldAlert, Users, Sliders, Cpu, Network, 
-  Database, Lock, ChevronRight
+  Database, Lock, ChevronRight, Layers
 } from 'lucide-react';
 
 interface NavItem {

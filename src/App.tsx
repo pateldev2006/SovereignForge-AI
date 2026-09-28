@@ -53,8 +53,6 @@ const MainLayout: React.FC = () => {
     }
 
     switch (activePage) {
-      case 'landing':
-        return <LandingPage />;
       case 'workbench':
         return <AIWorkbench />;
       case 'tasks':

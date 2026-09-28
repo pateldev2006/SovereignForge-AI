@@ -16,6 +16,7 @@ export const Header: React.FC<{ onToggleMobileMenu?: () => void }> = ({ onToggle
     setIsSovereigntyModalOpen,
     startDemoTour,
     activePage,
+    navigateTo,
     users
   } = useApp();
 
