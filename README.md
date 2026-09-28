@@ -1,112 +1,60 @@
 # 🛡️ SovereignForge AI
 ### *Private AI. Zero Egress. Evidence-First Decisions.*
 
-[![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026-orange.svg)](https://sovereignforge-ai.vercel.app)
-[![Architecture: 100% Air-Gapped](https://img.shields.io/badge/Architecture-100%25%20Air--Gapped-emerald.svg)](https://sovereignforge-ai.vercel.app)
-[![Security: 0 Outbound Egress](https://img.shields.io/badge/Security-0%20Outbound%20Egress-blue.svg)](https://sovereignforge-ai.vercel.app)
-[![Hardware HSM Verified](https://img.shields.io/badge/Ledger-SHA--256%20Attested-purple.svg)](https://sovereignforge-ai.vercel.app)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20Production-success.svg)](https://sovereignforge-ai.vercel.app)
+[![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026-orange.svg)](#)
+[![Architecture: 100% Air-Gapped](https://img.shields.io/badge/Architecture-100%25%20Air--Gapped-emerald.svg)](#)
+[![Security: 0 Outbound Egress](https://img.shields.io/badge/Security-0%20Outbound%20Egress-blue.svg)](#)
+[![Hardware HSM Verified](https://img.shields.io/badge/Ledger-SHA--256%20Attested-purple.svg)](#)
 
-**SovereignForge AI** is an enterprise-grade, on-premise industrial AI assistant designed for heavy engineering complexes, refineries, petrochemical plants, and critical infrastructure. It reads, understands, verifies, and generates traceable decisions end-to-end with **100% on-premise execution, zero cloud egress, and deterministic evidence-first provenance**.
-
-🌐 **Live Production Prototype:** [https://sovereignforge-ai.vercel.app](https://sovereignforge-ai.vercel.app)  
-📂 **GitHub Repository:** [https://github.com/pateldev2006/SovereignForge-AI](https://github.com/pateldev2006/SovereignForge-AI)
+**SovereignForge AI** is an enterprise-grade, on-premise industrial AI assistant purpose-built for heavy engineering complexes, refineries, petrochemical plants, and critical infrastructure. It reads, understands, verifies, and generates traceable decisions end-to-end with **100% on-premise execution, zero cloud egress, and deterministic evidence-first provenance**.
 
 ---
 
 ## 📑 Table of Contents
-1. [Executive Summary & Problem Statement](#-executive-summary--problem-statement)
-2. [Risk v/s SovereignForge AI](#-risk-vs-sovereignforge-ai)
+1. [Problem Statement & Operational Inefficiencies](#-problem-statement--operational-inefficiencies)
+2. [Solution Overview](#-solution-overview)
 3. [Quantified Real Impact](#-quantified-real-impact)
-4. [End-to-End Solution Architecture](#-end-to-end-solution-architecture)
-5. [6-Step Agentic Workflow](#-6-step-agentic-workflow)
-6. [System Architecture Layers](#-system-architecture-layers)
+4. [Detailed 6-Step Agentic Workflow](#-detailed-6-step-agentic-workflow)
+5. [Detailed System Architecture & Layers](#-detailed-system-architecture--layers)
+6. [Security Architecture & Air-Gap Invariants](#-security-architecture--air-gap-invariants)
 7. [Comprehensive Tech Stack](#-comprehensive-tech-stack)
-8. [Competitive Feature Matrix](#-competitive-feature-matrix)
-9. [Feasibility, Viability & Integration](#-feasibility-viability--integration)
-10. [Local Development & Quick Start](#-local-development--quick-start)
+8. [Feasibility, Viability & SAP Integration](#-feasibility-viability--sap-integration)
+9. [Local Development Setup](#-local-development-setup)
 
 ---
 
-## 🚨 Executive Summary & Problem Statement
+## 🚨 Problem Statement & Operational Inefficiencies
 
-Industrial plants face critical friction when handling non-destructive testing (NDT) reports, piping & instrumentation diagrams (P&IDs), and plant standard operating procedures (SOPs):
+Heavy industrial facilities (refineries, petrochemical complexes, offshore platforms) operate under strict regulatory safety regimes. Plant engineers face critical operational friction when evaluating inspection data against statutory standards:
 
-| Industry Inefficiency | Risk & Exposure | SovereignForge AI Resolution |
-| :--- | :--- | :--- |
-| **Confidential Data at Risk** | Uploading proprietary industrial blueprints & NDT reports to public cloud AI risks catastrophic data leakage and IP theft. | **100% On-Premise Air-Gapped:** Physical network isolation (`--network none`). 0 bytes egress. |
-| **No Traceability & Black-Box AI** | Public LLMs generate probabilistic, ungrounded text with no source linking or mathematical validation. | **Evidence-First Provenance:** Sentence-level click-to-source citations [1][2][3] anchored to exact page & paragraph. |
-| **Shadow AI Risk** | Unregulated usage of commercial chatbots across plant departments bypasses CISO oversight. | **Enterprise RBAC & Firewall:** AI Capability Firewall with token quotas, role boundaries, and audit logging. |
-| **Time-Consuming Approvals** | Engineers spend **3–4 hours** manually cross-referencing NDT survey tables against multi-hundred-page SOPs. | **Automated SOP Audits:** End-to-end pipeline executes in **~15 minutes** with automated deviation detection. |
+1. **Confidential Data at Risk:** Uploading proprietary engineering blueprints, P&IDs, and Non-Destructive Testing (NDT) reports to public or cloud-hosted AI introduces severe data leakage, IP theft, and regulatory non-compliance risks.
+2. **Lack of Traceability & Black-Box Decisions:** Commercial LLMs provide probabilistic, black-box text generation without verifiable line-item citations, making autonomous sign-off impossible in safety-critical environments.
+3. **Shadow AI Exposure:** Unregulated usage of public AI tools across plant departments bypasses enterprise Chief Information Security Officer (CISO) governance.
+4. **Time-Consuming Manual Audits:** Engineers spend **3–4 hours** manually cross-referencing ultrasonic thickness grids and P&ID drawings against multi-hundred-page Standard Operating Procedures (SOPs) and statutory standards (OISD, API 510, ASME).
 
 ---
 
-## ⚖️ Risk v/s SovereignForge AI
+## 💡 Solution Overview
+
+**SovereignForge AI** delivers an on-premise, air-gapped agentic AI platform that operates as a private engineering copilot. It reads unstructured inspection documents, extracts tabular metrics, grounds spatial drawing symbols, retrieves governing SOP clauses via Hybrid RAG, mathematically validates corrosion decay in an isolated code sandbox, detects regulatory deviations, and synthesizes publication-ready approval notes with click-to-source evidence linking.
 
 ```
-┌──────────────────────────────────────┐          ┌──────────────────────────────────────┐
-│       TRADITIONAL / CLOUD AI         │          │          SOVEREIGNFORGE AI           │
-├──────────────────────────────────────┤          ├──────────────────────────────────────┤
-│ ❌ Data goes to cloud (Data leaks)   │   VS     │ 🛡️ On-premise (Stays in local network│
-│ ❌ Black-box answers (No provenance) │          │ 🔍 Source-linked (Click-to-source)   │
-│ ❌ Manual SOP verification (3-4 hrs) │          │ ⚡ Automatic SOP & deviation checks  │
-│ ❌ Internet dependent (Outages risk) │          │ 🔒 Air-gapped (100% offline runtime) │
-│ ❌ Repeated expensive inference      │          │ 💾 Smart Cache (70% token savings)   │
-└──────────────────────────────────────┘          └──────────────────────────────────────┘
+On-Premise  •  Air-Gapped  •  Zero Cloud Egress  •  Evidence-First Provenance
 ```
 
 ---
 
 ## 📊 Quantified Real Impact
 
-```
-┌─────────────────────────┐   ┌─────────────────────────┐   ┌─────────────────────────┐
-│     3-4 hrs ➔ 15 min    │   │        0 OUTBOUND       │   │        70% TOKENS       │
-│  Report Verification &  │   │   Network Connections   │   │   Saved via Local Smart │
-│  Approval Time Reduced  │   │      (Zero Egress)      │   │     Semantic Caching    │
-└─────────────────────────┘   └─────────────────────────┘   └─────────────────────────┘
-```
-
-- **⏱️ 85% Less Approval Time:** Reduces turnaround note preparation from **3–4 hours down to ~15 minutes**.
-- **💰 Proven ROI Potential:** **269% Year-1 ROI** (1,225% projected over 4 years; 2.6x–4.1x cheaper than cloud IaaS/APIs).
-- **🛡️ Data Breach Prevention:** Eliminates risk of exposing proprietary refinery data (India's average industrial data breach cost: **₹22 Cr**).
-- **📜 Institutional Knowledge Preservation:** Captures retiring senior engineers' expertise into reusable organizational memory.
+- **⏱️ 85% Reduction in Verification Time:** Cuts turnaround note preparation and SOP audit time from **3–4 hours down to ~15 minutes**.
+- **🔒 0 Outbound Network Connections:** 100% physical and network isolation. All weights, embeddings, and vector indices execute locally.
+- **⚡ 70% Token Savings via Smart Cache:** Local semantic response caching reuses verified inference chains for recurrent equipment queries.
+- **🛡️ ₹22 Cr Data Breach Prevention:** Eliminates the risk of exposing classified plant blueprints (mitigating India's average industrial data breach impact).
+- **📈 Proven High ROI:** Delivers **269% Year-1 ROI** (projected **1,225% over 4 years**; 2.6x to 4.1x more cost-effective than cloud IaaS / API tokens).
 
 ---
 
-## 🏗️ End-to-End Solution Architecture
-
-```
-                                  SOVEREIGNFORGE AI PIPELINE
-                                  
- ┌──────────────────┐       ┌──────────────────┐       ┌─────────────────────────────────┐
- │ Inspection Report│       │  Multimodal AI   │       │        Hybrid Agentic RAG       │
- │ 📄 Scanned PDF   │ ────> │  👁️ PaddleOCR +  │ ────> │ • Vector Search (Qdrant Dense)  │
- │ 🖼️ P&ID Images   │       │     Qwen2.5-VL   │       │ • Keyword Search (BM25/Tantivy) │
- │ ✍️ Handwriting   │       │  (OCR + Spatial) │       │ • Graph Search (Neo4j Entity)   │
- └──────────────────┘       └──────────────────┘       │ • Multimodal Retrieval (Tables) │
-                                                       └────────────────┬────────────────┘
-                                                                        │
- ┌──────────────────┐       ┌──────────────────┐                        │
- │ Traceable Output │       │  Human-in-the-   │                        ▼
- │ 📝 Word (.docx)  │       │       Loop       │       ┌─────────────────────────────────┐
- │ 📑 Signed PDF    │ <──── │ 👤 Role-Based    │ <──── │      AI Agent Orchestrator      │
- │ 📊 Excel (.xlsx) │       │    Executive     │       │    (LangGraph Plan ➔ Act ➔      │
- │ 💻 Python (.py)  │       │    Sign-Off      │       │     Observe ➔ Verify ➔ Replan)  │
- └──────────────────┘       └──────────────────┘       └────────────────┬────────────────┘
-                                                                        │
-                                                                        ▼
-                                                       ┌─────────────────────────────────┐
-                                                       │         SOP Validation          │
-                                                       │ ⚠️ Deviation Detection (+6M Var)│
-                                                       │ 🔍 Missing-Evidence Flagging    │
-                                                       │ 📐 API 510 Math Re-Verification │
-                                                       └─────────────────────────────────┘
-```
-
----
-
-## 🔄 6-Step Agentic Workflow
+## 🔄 Detailed 6-Step Agentic Workflow
 
 ```
  ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
@@ -121,115 +69,172 @@ Industrial plants face critical friction when handling non-destructive testing (
  └─────────────────┘       └─────────────────┘       └─────────────────┘
 ```
 
-1. **Upload & Classify:** Engineer uploads scanned PDF or P&ID image. Intent router automatically detects task classification.
-2. **Multimodal Extraction:** `PaddleOCR` + `Qwen2.5-VL` extract printed tables, ultrasonic thickness grids, and spatial valve tags.
-3. **Hybrid RAG Retrieval:** Graph + Vector (`Qdrant`) + `BM25`, re-ranked with `BGE-reranker-v2-m3` to fetch exact SOP clauses.
-4. **Reasoning & Verification:** `DeepSeek-R1` checks for statutory deviations (e.g., sour crude overhaul limits) and runs isolated Python API 510 math.
-5. **Draft Generation:** `Qwen-2.5-14B` / `Qwen-2.5-72B` drafts the formal technical memo; `python-docx` and client-side binary engines build the deliverables.
-6. **Human Review & Approval:** Click-to-source review, inline direct editing, executive digital signature, and SHA-256 forensic audit entry.
+The agent orchestrator operates an autonomous, deterministic decision-making loop:
+
+### Step 1: Upload & Intent Classification
+- **Input:** Scanned inspection PDF, ultrasonic thickness survey, P&ID drawing image (PNG/DWG), or operational query.
+- **Mechanism:** The prompt and file metadata enter the local Intent Classifier Router (`FastAPI` gateway).
+- **Routing Decision:** Identifies the workload type (e.g., *Mathematical Code Execution*, *Visual Drawing Inspection*, *Dense Vector SOP Lookup*, or *Multi-Step Compliance Reasoning*) and assigns execution parameters.
+
+### Step 2: Multimodal Extraction & Parsing
+- **Engines:** `PaddleOCR` + `Surya` + `Qwen2.5-VL` / `Qwen3-VL-7B`.
+- **Processing:**
+  - Extracts printed text, tabular NDT data grids (e.g., shell thickness readings across Condition Monitoring Locations CML-01 to CML-24), and handwritten field inspector annotations.
+  - Generates spatial bounding box coordinates ($X_1, Y_1, X_2, Y_2$) for drawing entities (such as nozzle `N2`, relief valve `PSV-304`, and line tag `6"-CS-1501`).
+  - Computes confidence scores per extracted entity (e.g., 98.4% OCR confidence). Low-confidence items are flagged for human-in-the-loop review.
+
+### Step 3: Hybrid Agentic RAG Retrieval
+- **Engines:** `Qdrant Local` (Dense Vector) + `Tantivy` (BM25 Sparse) + `Neo4j` (Knowledge Graph) + `BGE-reranker-v2-m3`.
+- **Processing:**
+  - **Dense Semantic Retrieval:** Converts query into 1024-dimensional embeddings via local `BAAI/bge-m3`.
+  - **Keyword Exact Match:** Executes BM25 search over plant equipment codes, tag identifiers, and specific clause numbers (e.g., `SOP-4.2.1 §7.1`).
+  - **Graph Traversal:** Neo4j traverses relationships between equipment IDs, fluid service types (sour crude, amine, hydrogen), and linked statutory standards.
+  - **Cross-Encoder Re-Ranking:** `BGE-reranker-v2-m3` scores retrieved context chunks and extracts the top statutory clauses for synthesis.
+
+### Step 4: Reasoning, Verification & Sandboxed Computation
+- **Engines:** `DeepSeek-R1-Distill-70B` / `DeepSeek-R1-7B` + Isolated Python `SymPy` Sandbox (`Docker --network none`).
+- **Processing:**
+  - **Mathematical Verification:** Python sandbox computes statutory corrosion rate ($CR$) and remaining life ($RL$) per API 510:
+    $$CR = \frac{t_{\text{initial}} - t_{\text{actual}}}{\text{Years Elapsed}}$$
+    $$RL = \frac{t_{\text{actual}} - t_{\text{required}}}{CR}$$
+  - **SOP Deviation Audit:** DeepSeek-R1 cross-examines proposed field overhaul intervals against mandatory SOP rules. If a field proposal (e.g., 18-month turnaround) exceeds statutory limits for sour crude (12-month max per `SOP-4.2.1 §7.1`), an explicit **SOP Deviation Alert (+6M Variance)** is generated.
+
+### Step 5: Draft Generation & Deliverable Synthesis
+- **Engines:** `Qwen-2.5-72B-Instruct` / `Qwen3-14B` + `python-docx` / `openpyxl` / `PyMuPDF`.
+- **Processing:**
+  - Synthesizes a structured, formal Technical Approval Note (Ref: `MECH/2026/HX-204-APPR`) containing:
+    1. Executive Summary with verified wall thickness and retirement threshold.
+    2. SOP Non-Conformance findings and statutory risk classification.
+    3. Actionable engineering recommendations and procurement timelines.
+  - Compiles publication-ready artifacts directly in memory (`.docx`, cryptographically signed `.pdf`, `.xlsx`, `.py`).
+
+### Step 6: Human-in-the-Loop Review & Cryptographic Sign-Off
+- **Mechanism:** Deliverable Studio opens for authorized plant engineers and approvers.
+- **Processing:**
+  - Reviewers inspect click-to-source citations, modify draft text in the inline editor, and append digital sign-offs.
+  - Final approval triggers the Hardware HSM, applying a tamper-evident SHA-256 cryptographic seal recorded in the immutable forensic audit log.
 
 ---
 
-## 🏛️ System Architecture Layers
+## 🏛️ Detailed System Architecture & Layers
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│ 1. USER WORKBENCH (3-Column Interface)                                           │
-│    • Conversational Engine & Trace • Live Deliverable Studio • Network Telemetry │
+│ LAYER 1: USER WORKBENCH & INTERACTION                                            │
+│ • 3-Column UI: Session History, Conversational Trace, Deliverable Studio         │
+│ • Monaco Code Editor, PDF.js Visualizer, Real-time Network Egress HUD            │
 ├──────────────────────────────────────────────────────────────────────────────────┤
-│ 2. ADMIN CONTROL PANEL                                                           │
-│    • Model Registry • AI Capability Firewall • Policy Manager • User RBAC Matrix │
+│ LAYER 2: ENTERPRISE ADMIN & GOVERNANCE PANEL                                     │
+│ • Local Model Registry & Verification, AI Capability Firewall (Token Budgets)    │
+│ • 5-Tier RBAC Management Matrix, Tamper-Evident Forensic Audit Ledger            │
 ├──────────────────────────────────────────────────────────────────────────────────┤
-│ 3. API GATEWAY & DYNAMIC MODEL ROUTER (FastAPI + JWT + RBAC)                     │
-│    • Reasoning (DeepSeek-R1) • Vision (Qwen2.5-VL) • Coder (Qwen2.5-Coder)       │
+│ LAYER 3: API GATEWAY & DYNAMIC MODEL ROUTER                                      │
+│ • FastAPI Backend with JWT Authentication & RBAC Gatekeeper                      │
+│ • Intent Classifier Dispatcher (Reasoning / Coder / Vision / RAG Weights)        │
 ├──────────────────────────────────────────────────────────────────────────────────┤
-│ 4. AGENT ORCHESTRATOR (LangGraph Loop)                                           │
-│    • Plan ➔ Act ➔ Observe ➔ Verify ➔ Replan                                     │
+│ LAYER 4: AGENTIC ORCHESTRATION ENGINE                                            │
+│ • LangGraph State Machine: Plan ➔ Act ➔ Observe ➔ Verify ➔ Replan                │
+│ • Local Redis Semantic Smart Cache (Hit ➔ Reuse, Miss ➔ Execute)                 │
 ├──────────────────────────────────────────────────────────────────────────────────┤
-│ 5. HYBRID RAG & SANDBOX TOOLS                                                    │
-│    • Qdrant (Dense 1024-dim) • Tantivy (BM25) • Neo4j Graph • Docker --net none  │
+│ LAYER 5: HYBRID RAG & SANDBOX TOOLS                                              │
+│ • Qdrant Dense Vector Store (1024-dim BGE-M3) + Tantivy BM25 Exact Match        │
+│ • Neo4j Equipment Taxonomy Graph + Docker Sandbox (--network none)               │
 ├──────────────────────────────────────────────────────────────────────────────────┤
-│ 6. VERIFICATION LAYER                                                            │
-│    • Statutory SOP Deviation Audit • API 510 Formula Re-check • Citation Provenance│
+│ LAYER 6: VERIFICATION & COMPLIANCE ENGINE                                        │
+│ • SOP Statutory Deviation Auditor, API 510 Math Re-Verifier                      │
+│ • Sentence-Level Citation Validator, OCR Spatial Confidence Gatekeeper           │
 ├──────────────────────────────────────────────────────────────────────────────────┤
-│ 7. APPROVAL & SOVEREIGNTY PROOF                                                  │
-│    • Human-in-the-Loop Sign-off • SHA-256 Ledger • 0 Outbound Physical Invariant │
+│ LAYER 7: ATTESTATION & SOVEREIGNTY SEAL                                          │
+│ • FIPS 140-3 Hardware HSM SHA-256 Ledger Attestation                             │
+│ • Loopback-Only Network Assertion (0 Outbound Physical Invariant)                │
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
+## 🔒 Security Architecture & Air-Gap Invariants
+
+SovereignForge AI is engineered around a zero-trust, air-gapped security posture for high-consequence critical infrastructure:
+
+### 1. 🛡️ Absolute Air-Gap & Zero External Egress
+- **Physical Network Isolation:** The server cluster operates without a default internet gateway. All network sockets bind strictly to local network interfaces (`127.0.0.1` / on-premise LAN).
+- **Firewall Packet Assertion:** OS-level `iptables` and network monitoring tools (`ss`, `iftop`, `tcpdump`) continuously verify that 0 packets are transmitted to public IP address spaces.
+
+### 2. 🐍 Sandboxed Code Execution (`--network none`)
+- Python scripts generated to calculate remaining life, wall thickness decay curves, and burst pressure formulas execute inside isolated Docker containers with `--network none` and read-only filesystem mounts.
+- Prevents arbitrary code execution, disk persistence vulnerabilities, and lateral network movement.
+
+### 3. 🔐 Hardware HSM Cryptographic Ledger (FIPS 140-3)
+- Every prompt, intermediate reasoning step, and final deliverable is hashed using SHA-256.
+- The resulting hash is signed via a local Hardware Security Module (HSM) Root of Trust, producing an immutable audit record:
+  $$\text{Audit Hash} = \text{SHA256}(\text{Timestamp} \parallel \text{User ID} \parallel \text{Clearance} \parallel \text{Input Hash} \parallel \text{Model Weights ID} \parallel \text{Output Hash})$$
+
+### 4. 🧱 AI Capability Firewall & Guardrails
+- **Token Quota Management:** Enforces per-user and per-role computational token budgets to prevent Denial-of-Service (DoS) and resource exhaustion on local GPU clusters.
+- **Content Safety Guardrails:** Integrates local `OpenGuardrails-Text-3.3B` for real-time prompt injection filtering and prompt sanitization.
+- **Failover Security States:**
+  - `FULL`: All on-premise neural models & vector pipelines operational.
+  - `DEGRADED`: Vision OCR degraded; text reasoning remains active.
+  - `SAFE`: Read-only mode; automated code execution sandbox locked.
+  - `OFFLINE`: AI generation offline; static documents accessible.
+
+### 5. 👥 5-Tier Role-Based Access Control (RBAC)
+
+| Role | Clearance Level | Granular Permissions |
+| :--- | :--- | :--- |
+| **Plant / Process Engineer** | `L1 - Process Operations` | Upload NDT reports, trigger agent pipeline, draft notes, run calculations |
+| **IT / Automation Engineer** | `L2 - Engineering & SCADA` | Code Sandbox access, model registry verification, sandbox execution |
+| **Design / QA Officer** | `L3 - Quality & Compliance` | P&ID drawing inspection, SOP deviation review, review queue approval |
+| **Approving Authority** | `L4 - Executive Approval` | Final digital sign-off, approval queue management, note endorsement |
+| **CISO / Security Admin** | `L5 - CISO Security Clearance` | Firewall rules, system operating modes, global forensic audit ledger |
+
+### 6. 💾 Secure Offline Model Evolution
+- Model weight updates in air-gapped data centers are distributed exclusively via cryptographically signed packages on encrypted physical USB keys with SHA-256 verification before local registry ingestion.
+
+---
+
 ## 🛠️ Comprehensive Tech Stack
 
-### 🧠 Models & Neural Weights
-- **Reasoning & Compliance Audits:** `DeepSeek-R1-Distill-70B` / `DeepSeek-R1-7B`
-- **Multimodal Drawing & P&ID Vision:** `Qwen2.5-VL-72B-Vision` / `Qwen3-VL-7B`
-- **Code Generation & Math Sandbox:** `Qwen2.5-Coder-32B` / `Qwen3-Coder-14B`
-- **General Synthesis & Note Drafting:** `Qwen-2.5-72B-Instruct` / `Qwen3-14B`
-- **Dense Embeddings:** `BAAI/bge-m3` (1024-dimensional) + `bge-reranker-v2-m3`
+### 🧠 Models
+- `Qwen3-Coder-14B` · `Qwen3-14B` · `DeepSeek-R1-7B` · `Qwen3-VL-7B`
+- *(Also supporting `DeepSeek-R1-Distill-70B`, `Qwen-2.5-72B-Instruct`, `Qwen2.5-VL-72B-Vision`, `Qwen2.5-Coder-32B`)*
 
-### 🔍 Frameworks & Hybrid RAG
-- **Orchestration:** `LangGraph`, `FastAPI`, `Python 3.11`
-- **Vector Database:** `Qdrant Local`, `pgvector`
-- **Keyword & Graph Search:** `Tantivy (BM25)`, `Neo4j Graph Database`
-- **Inference Runtime:** `vLLM` (OpenAI-compatible local server), `Redis Cache`
+### 🔍 Frameworks & RAG
+- `LangGraph` · `FastAPI` · `pgvector` · `BGE-M3` · `BGE-reranker-v2-m3` · `Neo4j` · `Tantivy (BM25)`
 
-### 👁️ OCR & Vision Pipeline
-- **Document & Table Parsing:** `PaddleOCR`, `Surya OCR Engine`, `Tesseract Engine`
-- **Spatial Grounding:** `Qwen2.5-VL` (2400x1800 resolution tag grounding)
+### 👁️ OCR & Vision
+- `PaddleOCR` · `Surya` · `Qwen3-VL-7B` / `Qwen2.5-VL`
 
-### 🔒 Security, Sandbox & Governance
-- **Execution Sandbox:** `Docker run --network none` (Isolated Python SymPy environment)
-- **Egress Firewall:** `iptables`, physical network loopback assertion, `OpenGuardrails-Text-3.3B`
-- **Cryptographic Attestation:** `FIPS 140-3 Hardware HSM` + SHA-256 hash chains
-- **Identity & Authorization:** `JWT`, 5-Tier `RBAC Matrix` (L1 to L5 clearance)
+### 🔒 Security & Sandbox
+- `Docker --network none` · `iptables` · `SHA-256 checksums` · `JWT` · `RBAC` · `OpenGuardrails-Text-3.3B`
 
-### 📄 Document Generation & Artifacts
-- **Binary Engines:** `python-docx`, `openpyxl`, `python-pptx`, `PyMuPDF`
-- **Client-side Exporters:** Instant `.docx`, cryptographically signed `.pdf`, `.xlsx`, `.py`
+### 📄 Document Generation
+- `python-docx` · `openpyxl` · `python-pptx` · `PyMuPDF`
 
-### 💻 Frontend & Hardware Requirements
-- **Frontend:** `React 19`, `Vite`, `TypeScript`, `Tailwind CSS v4`, `Lucide Icons`, `Recharts`, `Monaco Editor`, `PDF.js`
-- **Compute Sizing:** Minimum 1x `RTX 4090 (24GB)` for single-node start; Scalable to `4x NVIDIA H100 SXM5 (80GB)` / `A100 (40–80GB)`
-- **Host Infrastructure:** `SQLite/WAL`, `systemd`, `Local NTP/DNS`, `Encrypted USB`
-- **Monitoring:** `Prometheus`, `Grafana`, `rsync`, Offline PyPI Mirror, Local Docker Registry
+### 💻 Frontend & Hardware
+- **Frontend:** `React` + `Vite` · `WebSocket` · `PDF.js` · `Monaco Editor` · `TailwindCSS` · `shadcn/ui`
+- **Hardware Tier:** `RTX 4090` / `A100 GPU (24–40GB)` up to `4x NVIDIA H100 SXM5 (80GB)`
+
+### ⚙️ Backend & Infrastructure
+- `Python 3.11` · `vLLM` · `Redis` · `SQLite/WAL` · `systemd`
+
+### 🌐 Network & Security Tools
+- `ss` · `iftop` · `tcpdump` · `Local NTP/DNS` · `Encrypted USB`
+
+### 📊 Monitoring & Deployment
+- `Prometheus` · `Grafana` · `rsync` · `Offline PyPI` · `Docker Registry`
 
 ---
 
-## 🥊 Competitive Feature Matrix
+## 📈 Feasibility, Viability & SAP Integration
 
-| # | Feature / Capability | IBM watsonx Orchestrate | NVIDIA AI Enterprise | SovereignForge AI |
-| :-: | :--- | :-: | :-: | :-: |
-| **1** | **On-Premise Deployment** | ✅ | ✅ | ✅ |
-| **2** | **100% Offline / Air-Gapped Operation** | ❌ | ❌ | ✅ |
-| **3** | **Enterprise Hybrid RAG (Vector + BM25 + Graph)** | ✅ | ✅ | ✅ |
-| **4** | **Multimodal Engineering Drawing (P&ID) AI** | ❌ | ✅ | ✅ |
-| **5** | **Agent Governance & Token Firewall** | ✅ | ✅ | ✅ |
-| **6** | **Industrial Risk-Based Agent Permissions** | ❌ | ❌ | ✅ |
-| **7** | **Industrial Policy Engine / Criticality Rules** | ❌ | ❌ | ✅ |
-| **8** | **Evidence + Missing-Data + Next-Action Output** | ❌ | ❌ | ✅ |
-| **9** | **AI Data-Flow Sovereignty Monitor (0 Egress)** | ❌ | ❌ | ✅ |
-| **10**| **Sovereign Lockdown + Human-Verified Action** | ❌ | ❌ | ✅ |
+- **Read-Only SAP ECC Integration:** Connects to legacy SAP ECC 6.0 via OData V2/V4 over SAP NetWeaver Gateway without requiring expensive S/4HANA migrations.
+- **Graph RAG for Data Silos:** Resolves equipment tag discrepancies across disparate DMS, SAP PM, and field log spreadsheets.
+- **API 510 Statutory Compliance:** Enforces statutory minimum thickness thresholds ($t_{\text{required}} = 7.8\text{ mm}$ on shell side) with automatic non-conformance logging.
 
 ---
 
-## 📈 Feasibility, Viability & Integration
-
-### 🏭 Enterprise Integration
-- **SAP ECC Ready:** Read-only OData V2/V4 integration via SAP NetWeaver Gateway (works directly on existing SAP ECC 6.0 without requiring costly S/4HANA migrations).
-- **Messy Data Silos:** Graph RAG unifies disparate equipment tags across DMS, SAP PM, and field log sheets without replacing legacy infrastructure.
-- **Air-Gap Evolution:** Signed model packages and cryptographic SHA-256 hashes allow controlled model updates via encrypted physical USB keys.
-
-### 🧮 Mathematical Verification (API 510 §7.1.1)
-The isolated sandbox mathematically validates corrosion decay and equipment retirement life:
-$$\text{Corrosion Rate (CR)} = \frac{t_{\text{initial}} - t_{\text{actual}}}{\text{Years Elapsed}}$$
-$$\text{Remaining Life (RL)} = \frac{t_{\text{actual}} - t_{\text{required}}}{CR}$$
-
-If $RL < \text{Scheduled Turnaround Interval}$, an automatic statutory non-conformance alert (`⚠️ +6M Overhaul Variance`) is flagged in the generated technical note.
-
----
-
-## 🚀 Local Development & Quick Start
+## 🚀 Local Development Setup
 
 ```bash
 # 1. Clone the repository
@@ -245,7 +250,7 @@ npm install
 npm run dev
 ```
 
-Open **`http://localhost:5173`** in your browser to interact with the workbench.
+The application will be accessible locally at `http://localhost:5173`.
 
 ---
 
@@ -253,7 +258,7 @@ Open **`http://localhost:5173`** in your browser to interact with the workbench.
 
 - **Project:** SovereignForge AI
 - **Tagline:** *Private AI. Zero Egress. Evidence-First Decisions.*
-- **Target Audience:** Refineries, Petrochemical Complexes, Power Plants, Heavy Manufacturing
+- **Target Sectors:** Oil & Gas Refineries, Petrochemicals, Power Generation, Heavy Manufacturing, Defense & Critical Infrastructure
 
 ---
 
