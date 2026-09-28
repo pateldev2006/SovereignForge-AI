@@ -231,3 +231,92 @@ export function downloadApprovalNotePDF(deliverable: TaskDeliverable, approverNa
     URL.revokeObjectURL(url);
   }
 }
+
+/**
+ * Pure client-side PDF Blob generator for the Demo Sample Inspection Report (Shot 2)
+ */
+export function downloadSampleInspectionReportPDF() {
+  const title = "NON-DESTRUCTIVE TESTING (NDT) INSPECTION REPORT";
+  const subtitle = "SovereignForge Industrial Compliance Asset Management";
+  const lines = [
+    "========================================================================================",
+    "DOCUMENT ID: INSP/2026/HX-204-Q3 | DATE: 15-JUN-2026 | CLASSIFICATION: CONFIDENTIAL",
+    "EQUIPMENT TARGET: CDU-03 COMPLEX - HEAT EXCHANGER HX-204 (SHELL & TUBE)",
+    "INSPECTION METHOD: ULTRASONIC NDT THICKNESS SURVEY (ASME SECTION V)",
+    "========================================================================================",
+    "",
+    "1. EXECUTIVE MEASUREMENT SUMMARY:",
+    "- Equipment Nominal Design Thickness: 12.5 mm (ASME Section VIII Div 1)",
+    "- Statutory Minimum Retirement Thickness: 7.8 mm (SOP-4.2.1 Section 6.1)",
+    "- Minimum Measured Wall Thickness: 8.2 mm (Location: Nozzle N2 vicinity, Grid C4)",
+    "- Calculated Historical Corrosion Rate: 0.28 mm/year",
+    "- Calculated Remaining Service Life: 1.43 Years (approx. 17 months)",
+    "",
+    "2. ULTRASONIC THICKNESS GRID MEASUREMENTS:",
+    "Grid A1: 10.4 mm | Grid A2: 10.1 mm | Grid A3: 9.8 mm",
+    "Grid B1: 9.5 mm  | Grid B2: 9.2 mm  | Grid B3: 8.9 mm",
+    "Grid C1: 8.8 mm  | Grid C2: 8.5 mm  | Grid C4 (Nozzle N2): 8.2 mm [CRITICAL THINNING]",
+    "",
+    "3. FIELD NDT RECOMMENDATION (NON-CONFORMANCE DETECTED):",
+    "- Field inspector suggests deferring turnaround to 18 months (March 2028).",
+    "- WARNING: SOP-4.2.1 Section 7.1 strictly limits turnaround deferral to 12 months for sour crude service.",
+    "- Mandatory Action: Advance turnaround window to Q1 2027 to prevent containment breach.",
+    "",
+    "REPORT SIGN-OFF: NDT Level-III Inspector Rajesh Kumar | Certified ISO-9712"
+  ];
+
+  let streamContent = 'BT\n/F1 14 Tf\n50 750 Td\n(' + title + ') Tj\nET\n';
+  streamContent += 'BT\n/F1 10 Tf\n50 732 Td\n(' + subtitle + ') Tj\nET\n';
+  
+  let y = 700;
+  for (const line of lines) {
+    const safeLine = line.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+    streamContent += `BT\n/F1 9 Tf\n50 ${y} Td\n(${safeLine}) Tj\nET\n`;
+    y -= 15;
+  }
+
+  const streamLen = streamContent.length;
+
+  let pdfData = '%PDF-1.4\n';
+  const offsets: number[] = [];
+
+  // Obj 1
+  offsets.push(pdfData.length);
+  pdfData += '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n';
+
+  // Obj 2
+  offsets.push(pdfData.length);
+  pdfData += '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n';
+
+  // Obj 3
+  offsets.push(pdfData.length);
+  pdfData += '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n';
+
+  // Obj 4
+  offsets.push(pdfData.length);
+  pdfData += `4 0 obj\n<< /Length ${streamLen} >>\nstream\n${streamContent}\nendstream\nendobj\n`;
+
+  // Obj 5
+  offsets.push(pdfData.length);
+  pdfData += '5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n';
+
+  // XRef
+  const xrefOffset = pdfData.length;
+  pdfData += 'xref\n0 6\n0000000000 65535 f \n';
+  for (const off of offsets) {
+    pdfData += off.toString().padStart(10, '0') + ' 00000 n \n';
+  }
+
+  pdfData += `trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+
+  const blob = new Blob([pdfData], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sample_inspection_report.pdf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+

@@ -11,7 +11,7 @@ import {
   Presentation, Pause, Square, AlertCircle, HelpCircle, HardDrive,
   PanelRightClose, PanelRightOpen, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { downloadApprovalNotePDF } from '../../utils/exportUtils';
+import { downloadApprovalNotePDF, downloadSampleInspectionReportPDF } from '../../utils/exportUtils';
 
 interface ChatMessage {
   id: string;
@@ -482,14 +482,16 @@ export const AIWorkbench: React.FC = () => {
             <p className="text-[10px] text-slate-600 leading-tight">
               Download the official sample NDT report to your computer to upload in Shot 2.
             </p>
-            <a
-              href="/sample_inspection_report.pdf"
-              download="sample_inspection_report.pdf"
-              className="w-full py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer no-underline"
+            <button
+              onClick={() => {
+                downloadSampleInspectionReportPDF();
+                showToast('Sample Report Downloaded', 'sample_inspection_report.pdf generated and saved to your Downloads.', 'success');
+              }}
+              className="w-full py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer border-0"
             >
               <Download className="w-3 h-3" />
               <span>Download Sample Report (.pdf)</span>
-            </a>
+            </button>
           </div>
 
         </div>
@@ -865,6 +867,22 @@ export const AIWorkbench: React.FC = () => {
                 title="Attach local files (PDF, DOCX, XLSX, PNG, DWG, ZIP, MSG)"
               >
                 <Paperclip className="w-4 h-4" />
+              </button>
+
+              {/* 1-Click Auto Attach Sample Report (For Shot 2 Demo) */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedFiles.includes('sample_inspection_report.pdf')) {
+                    setSelectedFiles(prev => [...prev, 'sample_inspection_report.pdf']);
+                    showToast('Sample Report Attached', 'sample_inspection_report.pdf loaded with 98.4% OCR confidence.', 'success');
+                  }
+                }}
+                className="h-9 px-2.5 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-blue-700 text-[10px] font-bold flex items-center gap-1.5 transition-all flex-shrink-0 cursor-pointer shadow-2xs"
+                title="1-Click: Attach Sample Inspection Report for Shot 2 Demo"
+              >
+                <Zap className="w-3.5 h-3.5 text-blue-600" />
+                <span className="hidden sm:inline">Attach Sample PDF</span>
               </button>
 
               {/* Voice Dictation Button */}
