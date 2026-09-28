@@ -193,6 +193,9 @@ export const AIWorkbench: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isInitialMount = useRef(true);
 
+  // Agent Pipeline Expansion State (Shot 4 Demo Trace)
+  const [isAgentTraceExpanded, setIsAgentTraceExpanded] = useState<boolean>(true);
+
   // Right Column View States
   const [isDeliverableStudioOpen, setIsDeliverableStudioOpen] = useState<boolean>(true);
   const [deliverableFormatTab, setDeliverableFormatTab] = useState<'docx' | 'xlsx' | 'pptx' | 'pdf' | 'code' | 'diff'>('docx');
@@ -627,15 +630,55 @@ export const AIWorkbench: React.FC = () => {
             )}
           </div>
 
-          {/* ═══ MULTI-STEP AGENT TRACE (EXPANDABLE) ═══ */}
-          <div className="border-t border-slate-200 bg-slate-50 p-3 space-y-2">
+          {/* ═══ MULTI-STEP AGENT TRACE (EXPANDABLE PER SHOT 4) ═══ */}
+          <div className="border-t border-slate-200 bg-slate-50 p-3 space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bot className="w-4 h-4 text-blue-600" />
                 <span className="text-[11px] font-bold text-slate-900 uppercase tracking-tight">Agent Execution Pipeline</span>
-                <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                  {agentProgressStep}/7 Steps
+                <button
+                  onClick={() => setIsAgentTraceExpanded(!isAgentTraceExpanded)}
+                  className="text-[9px] font-mono font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 flex items-center gap-1 cursor-pointer transition-colors"
+                  title="Click to toggle full agent execution trace"
+                >
+                  <span>{agentProgressStep}/7 Steps</span>
+                  {isAgentTraceExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                </button>
+              </div>
+
+              {/* Dynamic Model Router Badge (Shot 4 Hover Target) */}
+              <div 
+                className="group relative hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs cursor-help"
+                title="Model Router dynamically assigns specialized local neural weights per step"
+              >
+                <span className="text-[9px] font-bold uppercase text-slate-400">ROUTER:</span>
+                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border flex items-center gap-1 ${
+                  agentProgressStep <= 2
+                    ? 'bg-purple-50 text-purple-800 border-purple-200'
+                    : agentProgressStep <= 5
+                    ? 'bg-blue-50 text-blue-800 border-blue-200'
+                    : 'bg-indigo-50 text-indigo-800 border-indigo-200'
+                }`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  {agentProgressStep <= 2 
+                    ? '👁️ Vision (Qwen2.5-VL-72B)' 
+                    : agentProgressStep <= 5 
+                    ? '🧠 Reasoning (DeepSeek-R1)' 
+                    : '✍️ Drafting (Qwen-2.5-72B)'}
                 </span>
+
+                {/* Model Router Hover Tooltip Card */}
+                <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block w-64 p-2.5 bg-slate-900 text-white rounded-xl shadow-xl text-[10px] font-mono z-30 border border-slate-700 pointer-events-none">
+                  <div className="font-bold text-emerald-400 flex items-center justify-between pb-1 border-b border-slate-800">
+                    <span>ACTIVE AIR-GAPPED WEIGHTS</span>
+                    <span>0 EGRESS</span>
+                  </div>
+                  <div className="pt-1.5 space-y-1 text-slate-300">
+                    <div>• <strong>Current:</strong> {agentProgressStep <= 2 ? 'Qwen2.5-VL-72B (Vision)' : agentProgressStep <= 5 ? 'DeepSeek-R1-Distill-70B' : 'Qwen-2.5-72B-Instruct'}</div>
+                    <div>• <strong>Latency:</strong> ~340ms • <strong>VRAM:</strong> 42.4 GB</div>
+                    <div>• <strong>Integrity:</strong> SHA-256 Bit-Level Verified</div>
+                  </div>
+                </div>
               </div>
 
               {/* Agent Pause / Stop Controls */}
@@ -647,7 +690,7 @@ export const AIWorkbench: React.FC = () => {
                         setIsAgentPaused(!isAgentPaused);
                         showToast(isAgentPaused ? 'Agent Resumed' : 'Agent Paused', 'Paused pipeline execution.', 'info');
                       }}
-                      className="p-1 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 text-[10px] font-bold flex items-center gap-1"
+                      className="p-1 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <Pause className="w-3 h-3" />
                       <span>{isAgentPaused ? 'Resume' : 'Pause'}</span>
@@ -657,7 +700,7 @@ export const AIWorkbench: React.FC = () => {
                         resetTaskToFresh();
                         showToast('Agent Stopped', 'Pipeline execution halted by user.', 'warning');
                       }}
-                      className="p-1 rounded bg-rose-100 text-rose-800 hover:bg-rose-200 text-[10px] font-bold flex items-center gap-1"
+                      className="p-1 rounded bg-rose-100 text-rose-800 hover:bg-rose-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <Square className="w-3 h-3" />
                       <span>Stop</span>
@@ -675,18 +718,69 @@ export const AIWorkbench: React.FC = () => {
               </div>
             </div>
 
-            {/* Step List Mini Progress */}
+            {/* Step List Mini Progress Bar */}
             <div className="grid grid-cols-7 gap-1">
               {[1, 2, 3, 4, 5, 6, 7].map((s) => (
                 <div
                   key={s}
-                  title={`Step ${s}: ${agentStepModel[s]}`}
+                  title={`Step ${s}: ${
+                    s === 1 ? 'OCR & Table Parsing' :
+                    s === 2 ? 'P&ID Vision Analysis' :
+                    s === 3 ? 'SOP RAG Retrieval' :
+                    s === 4 ? 'API 510 Math Verification' :
+                    s === 5 ? 'SOP Deviation Audit' :
+                    s === 6 ? 'Approval Note Synthesis' :
+                    'SHA-256 Ledger Attestation'
+                  }`}
                   className={`h-1.5 rounded-full transition-all ${
                     s <= agentProgressStep ? 'bg-blue-600' : 'bg-slate-200'
                   }`}
                 />
               ))}
             </div>
+
+            {/* Detailed Expanded Steps (Shot 4 Viewer Reading Trace) */}
+            {isAgentTraceExpanded && (
+              <div className="pt-2 border-t border-slate-200/80 space-y-1.5 max-h-48 overflow-y-auto pr-1 text-xs">
+                {[
+                  { step: 1, title: 'Document OCR & Layout Table Parsing', model: 'PaddleOCR + Tesseract Engine', time: '140ms', detail: 'Extracted NDT ultrasonic table, shell thickness grid C4' },
+                  { step: 2, title: 'P&ID Engineering Drawing Computer Vision', model: 'Qwen-2.5-VL-72B-Vision (Local)', time: '380ms', detail: 'Identified Heat Exchanger HX-204 shell nozzle N2 tag' },
+                  { step: 3, title: 'Dense SOP RAG Retrieval & Vector Search', model: 'BAAI BGE-M3 (1024-dim dense)', time: '18ms', detail: 'Retrieved SOP-4.2.1 §7.1 and OISD-STD-129 overhaul clauses' },
+                  { step: 4, title: 'API 510 Mathematical Formula Verification', model: 'Python SymPy Sandbox (Isolated)', time: '24ms', detail: 'Corrosion rate 0.28 mm/yr, remaining life 1.43 years' },
+                  { step: 5, title: 'SOP Non-Conformance & Deviation Audit', model: 'DeepSeek-R1-Distill-70B (Local)', time: '410ms', detail: 'Flagged 18-month proposal against SOP 12-month sour crude statutory limit' },
+                  { step: 6, title: 'Formal Technical Approval Note Synthesis', model: 'Qwen-2.5-72B-Instruct (Local)', time: '620ms', detail: 'Drafted 3-point executive note with strict source provenance' },
+                  { step: 7, title: 'Cryptographic SHA-256 Ledger Attestation', model: 'Hardware HSM Root of Trust', time: '8ms', detail: 'Zero cloud egress invariant verified & tamper-evident signature generated' },
+                ].map((st) => (
+                  <div 
+                    key={st.step}
+                    className={`p-2 rounded-lg border text-[11px] transition-all flex items-start justify-between gap-2 ${
+                      st.step < agentProgressStep
+                        ? 'bg-emerald-50/50 border-emerald-200 text-slate-800'
+                        : st.step === agentProgressStep
+                        ? 'bg-blue-50 border-blue-300 text-blue-950 font-bold ring-1 ring-blue-300'
+                        : 'bg-white/60 border-slate-200 text-slate-400 opacity-60'
+                    }`}
+                  >
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-mono ${
+                          st.step <= agentProgressStep ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'
+                        }`}>
+                          {st.step}
+                        </span>
+                        <span>{st.title}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-sans pl-5">{st.detail}</p>
+                    </div>
+
+                    <div className="text-right font-mono text-[9px] flex-shrink-0">
+                      <span className="text-blue-700 font-bold block">{st.model.split(' ')[0]}</span>
+                      <span className="text-slate-400">{st.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ═══ COMPOSER & MULTI-MODAL IMPORT DOCK ═══ */}
@@ -815,11 +909,11 @@ export const AIWorkbench: React.FC = () => {
             <div className="flex items-center gap-1.5 overflow-x-auto pt-1">
               <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex-shrink-0">Quick:</span>
               {[
+                'Draft an approval note for the corrosion findings. Check against our SOPs.',
                 'What SOPs apply to HX-204?',
                 'Show corrosion rate trend',
                 'Draft turnaround plan',
-                'Audit P&ID PSV-304',
-                'Send to approval queue'
+                'Audit P&ID PSV-304'
               ].map((q, i) => (
                 <button
                   key={i}
@@ -902,17 +996,40 @@ export const AIWorkbench: React.FC = () => {
           {/* Deliverable Body Viewer / Inline Editor */}
           <div className="bg-slate-50 rounded-xl border border-slate-200 p-3.5 space-y-3 flex-1 min-h-[260px] overflow-y-auto">
             
+            {/* ⚠️ Prominent SOP Deviation Detected Card (Shot 5 Hover & Click Target) */}
+            <div 
+              onClick={() => openSourceViewer(0)}
+              className="p-3 bg-rose-50 border-2 border-rose-300 hover:border-rose-400 hover:bg-rose-100/90 rounded-xl space-y-1.5 cursor-pointer transition-all shadow-xs group"
+              title="Click to view SOP-4.2.1 §7.1 statutory clause and source grounding"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-[11px] text-rose-950 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 animate-pulse flex-shrink-0" />
+                  <span>SOP Deviation Detected</span>
+                </span>
+                <span className="text-[9px] font-mono font-bold bg-rose-200/80 text-rose-900 px-1.5 py-0.5 rounded border border-rose-300 group-hover:bg-rose-300">
+                  +6M OVERHAUL VARIANCE
+                </span>
+              </div>
+              <p className="text-[11px] text-rose-900 leading-snug">
+                Proposed field 18-month turnaround violates the 12-month limit mandated by <strong className="underline decoration-rose-500 font-bold">SOP-4.2.1 §7.1</strong> for sour crude service.
+              </p>
+              <div className="text-[10px] font-bold text-rose-700 flex items-center gap-1 group-hover:underline pt-0.5 font-mono">
+                <span>[Click to inspect highlighted SOP-4.2.1 §7.1 clause]</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+
             {/* Contextual Badges */}
             <div className="flex flex-wrap items-center gap-1.5 text-[9px] font-mono">
-              <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200 font-bold flex items-center gap-1">
-                <AlertCircle className="w-3 h-3 text-rose-600" />
-                DEVIATION: +6M OVERHAUL VARIANCE
-              </span>
               <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-bold">
                 ✓ 3 CITATIONS VERIFIED
               </span>
               <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
                 0 UNVERIFIED CLAIMS
+              </span>
+              <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200 font-bold">
+                100% LOCAL DETERMINISTIC
               </span>
             </div>
 
@@ -997,21 +1114,45 @@ print(f"Verified Execution: {result}")
                 </div>
               </div>
             ) : (
-              <div className="space-y-2 text-xs text-slate-800 leading-relaxed">
-                <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-2xs space-y-2">
+              <div className="space-y-2.5 text-xs text-slate-800 leading-relaxed">
+                <div className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-2.5">
                   <div className="border-b pb-1.5 flex items-center justify-between">
-                    <span className="font-bold text-blue-900 text-[11px]">FORMAL APPROVAL NOTE</span>
+                    <span className="font-extrabold text-blue-900 text-xs tracking-tight">FORMAL TECHNICAL APPROVAL NOTE</span>
                     <span className="font-mono text-[9px] text-slate-400">REF: MECH/2026/HX-204-APPR</span>
                   </div>
-                  <p className="text-[11px]">
-                    <strong>1. Executive Summary:</strong> NDT ultrasonic thickness survey on Heat Exchanger HX-204 shell side reveals minimum wall thickness of <button onClick={() => openSourceViewer(0)} className="text-blue-600 font-bold hover:underline">[8.2 mm]</button> (Retirement threshold: 7.8 mm).
-                  </p>
-                  <p className="text-[11px]">
-                    <strong>2. SOP Non-Conformance:</strong> Proposed 18-month overhaul interval violates the 12-month limit mandated by <button onClick={() => openSourceViewer(1)} className="text-blue-600 font-bold hover:underline">[SOP-4.2.1 §7.1]</button> for sour crude service.
-                  </p>
-                  <p className="text-[11px]">
-                    <strong>3. Recommendation:</strong> Advance turnaround window to Q1 2027 with pre-allocated tube bundle procurement.
-                  </p>
+
+                  {/* Sentence 1 (Click -> Inspection Report p.4 per Shot 6) */}
+                  <div 
+                    onClick={() => openSourceViewer(1)}
+                    className="p-2 rounded-lg border border-transparent hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer transition-all space-y-1 group"
+                    title="Click sentence to inspect NDT Inspection Report source (Page 4)"
+                  >
+                    <p className="text-[11px] leading-relaxed">
+                      <strong>1. Executive Summary:</strong> NDT ultrasonic thickness survey on Heat Exchanger HX-204 shell side reveals minimum wall thickness of <span className="inline-flex items-center gap-1 font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200 group-hover:bg-blue-100">[8.2 mm (Doc: INSP/2026/HX-204 p.4)]</span> against original design thickness 12.5 mm (Retirement threshold: 7.8 mm).
+                    </p>
+                  </div>
+
+                  {/* Sentence 2 (Click -> SOP-4.2.1 p.18 per Shot 5 & 6) */}
+                  <div 
+                    onClick={() => openSourceViewer(0)}
+                    className="p-2 rounded-lg border border-rose-200 bg-rose-50/30 hover:border-rose-400 hover:bg-rose-50 cursor-pointer transition-all space-y-1 group"
+                    title="Click sentence to inspect SOP-4.2.1 statutory compliance provenance (Page 18)"
+                  >
+                    <p className="text-[11px] leading-relaxed text-rose-950">
+                      <strong>2. SOP Non-Conformance:</strong> Proposed field 18-month turnaround interval violates the 12-month limit mandated by <span className="inline-flex items-center gap-1 font-mono font-bold text-rose-800 bg-rose-100 px-1.5 py-0.2 rounded border border-rose-300 group-hover:bg-rose-200">[SOP-4.2.1 §7.1 (SOP p.18)]</span> for sour crude service.
+                    </p>
+                  </div>
+
+                  {/* Sentence 3 (Click -> SOP-4.2.1 p.22 per Shot 6) */}
+                  <div 
+                    onClick={() => openSourceViewer(2)}
+                    className="p-2 rounded-lg border border-transparent hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer transition-all space-y-1 group"
+                    title="Click sentence to inspect tube bundle replacement limits (Page 22)"
+                  >
+                    <p className="text-[11px] leading-relaxed">
+                      <strong>3. Recommendation:</strong> Advance turnaround window to Q1 2027 with pre-allocated tube bundle procurement per <span className="inline-flex items-center gap-1 font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200 group-hover:bg-blue-100">[SOP-4.2.1 §4.3.4 (SOP p.22)]</span>.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}

@@ -355,7 +355,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const openSourceViewer = (citationIndexOrId: number | string) => {
     let match: SourceCitation | undefined;
     if (typeof citationIndexOrId === 'number') {
-      match = SAMPLE_RETRIEVED_SOURCES.find(s => s.citationIndex === citationIndexOrId);
+      match = SAMPLE_RETRIEVED_SOURCES.find(s => s.citationIndex === citationIndexOrId) || SAMPLE_RETRIEVED_SOURCES[citationIndexOrId];
     } else {
       match = SAMPLE_RETRIEVED_SOURCES.find(s => s.id === citationIndexOrId);
     }
