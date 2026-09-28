@@ -29,6 +29,12 @@ export const Sidebar: React.FC<{ isMobileOpen?: boolean; onCloseMobile?: () => v
   // 1. User Workbench Items (filtered dynamically by canViewPage)
   const userWorkbenchItems: NavItem[] = [
     {
+      id: 'landing',
+      label: 'Product Landing Page',
+      icon: <Layers className="w-4 h-4 text-purple-600" />,
+      moduleKey: 'workbench'
+    },
+    {
       id: 'workbench',
       label: 'AI Task Composer',
       icon: <Bot className="w-4 h-4" />,

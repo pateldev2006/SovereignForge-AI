@@ -86,13 +86,17 @@ export const Header: React.FC<{ onToggleMobileMenu?: () => void }> = ({ onToggle
             </button>
           )}
 
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
+          <div 
+            onClick={() => navigateTo('landing')}
+            className="flex items-center gap-2.5 cursor-pointer group"
+            title="View SovereignForge Product Architecture & Landing Page"
+          >
+            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs group-hover:scale-105 transition-transform">
               <ShieldCheck className="w-4.5 h-4.5" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-slate-900 tracking-tight text-sm leading-none">
+                <span className="font-extrabold text-slate-900 tracking-tight text-sm leading-none group-hover:text-blue-600 transition-colors">
                   SOVEREIGNFORGE<span className="text-blue-600">.AI</span>
                 </span>
                 <span className="text-[9px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.2 rounded leading-none">
@@ -190,10 +194,20 @@ export const Header: React.FC<{ onToggleMobileMenu?: () => void }> = ({ onToggle
             <HelpCircle className="w-3 h-3 text-slate-400" />
           </div>
 
-          {/* 4. Guided Judge Demo Tour Launcher */}
+          {/* 4. Product Overview / Landing Page */}
+          <button
+            onClick={() => navigateTo('landing')}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all shadow-2xs border border-slate-200 cursor-pointer"
+            title="View Product Landing Page & Architecture Showcase"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+            <span className="text-[11px]">Landing Page</span>
+          </button>
+
+          {/* 5. Guided Judge Demo Tour Launcher */}
           <button
             onClick={startDemoTour}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
             title="Launch step-by-step 3-minute evaluation walkthrough"
           >
             <Sparkles className="w-3.5 h-3.5" />

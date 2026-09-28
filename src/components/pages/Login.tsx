@@ -46,9 +46,19 @@ export const Login: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold font-mono">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-green"></span>
-          <span>● INTERNAL AIR-GAPPED INFRASTRUCTURE</span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigateTo('landing')}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold font-mono transition-colors cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            <span>Product Landing Page ↗</span>
+          </button>
+          
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold font-mono">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-green"></span>
+            <span>● INTERNAL AIR-GAPPED INFRASTRUCTURE</span>
+          </div>
         </div>
       </div>
 

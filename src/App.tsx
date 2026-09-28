@@ -23,11 +23,24 @@ import { ModelRegistry } from './components/pages/ModelRegistry';
 import { Policies } from './components/pages/Policies';
 import { SecurityCenter } from './components/pages/SecurityCenter';
 import { NetworkPage } from './components/pages/NetworkPage';
+import { LandingPage } from './components/pages/LandingPage';
 import { Login } from './components/pages/Login';
 
 const MainLayout: React.FC = () => {
   const { activePage, currentUser, canViewPage } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // If on landing page, render dedicated full-screen landing page with its own nav & footer
+  if (activePage === 'landing') {
+    return (
+      <div className="min-h-screen bg-slate-900 text-slate-100 font-sans">
+        <LandingPage />
+        <SovereigntyMonitorModal />
+        <JudgeDemoTour />
+        <Toast />
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return <Login />;
@@ -40,6 +53,8 @@ const MainLayout: React.FC = () => {
     }
 
     switch (activePage) {
+      case 'landing':
+        return <LandingPage />;
       case 'workbench':
         return <AIWorkbench />;
       case 'tasks':

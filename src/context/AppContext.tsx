@@ -193,6 +193,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (currentUser.role === 'CISO') return true;
 
     switch (page) {
+      case 'landing':
       case 'workbench':
       case 'tasks':
       case 'documents':

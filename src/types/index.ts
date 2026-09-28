@@ -25,6 +25,7 @@ export interface User {
 }
 
 export type PageId =
+  | 'landing'             // Public Marketing & Architecture Showcase Landing Page
   // User Workbench
   | 'workbench'           // Hero Industrial AI Task Composer & Execution Engine
   | 'tasks'               // My Active Industrial Tasks
