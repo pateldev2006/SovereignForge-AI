@@ -378,6 +378,9 @@ export const AIWorkbench: React.FC = () => {
 
   // Agent Pipeline Expansion State (Shot 4 Demo Trace)
   const [isAgentTraceExpanded, setIsAgentTraceExpanded] = useState<boolean>(true);
+  const [isRouterCardOpen, setIsRouterCardOpen] = useState<boolean>(false);
+  const [demoDurationMode, setDemoDurationMode] = useState<'90s' | '15s'>('90s');
+  const [agentElapsedTime, setAgentElapsedTime] = useState<number>(0);
 
   // Right Column View States
   const [isDeliverableStudioOpen, setIsDeliverableStudioOpen] = useState<boolean>(true);
@@ -387,6 +390,20 @@ export const AIWorkbench: React.FC = () => {
     `# TECHNICAL APPROVAL NOTE — MECH/2026/HX-204-APPR\n\n**EQUIPMENT:** Heat Exchanger HX-204 (Crude Distillation Unit 03)\n**CURRENT WALL THICKNESS:** 8.2 mm (Min. allowable: 7.8 mm)\n**CORROSION RATE:** 0.28 mm/year\n**RECOMMENDED ACTION:** Advance Turnaround window to Q1 2027 per SOP-4.2.1 §7.1.\n\n**DEVIATION DETECTED:** Field inspector proposal (18 months) exceeds SOP statutory limit (12 months). Requesting executive override.`
   );
   const [trainingSignalOptIn, setTrainingSignalOptIn] = useState(true);
+
+  // Live timer effect during Agent Execution
+  useEffect(() => {
+    let timer: any;
+    if (isAgentRunning) {
+      setAgentElapsedTime(0);
+      timer = setInterval(() => {
+        setAgentElapsedTime(prev => prev + 1);
+      }, 1000);
+    } else {
+      setAgentElapsedTime(0);
+    }
+    return () => clearInterval(timer);
+  }, [isAgentRunning]);
 
   // Past Sessions Search
   const [sessionSearch, setSessionSearch] = useState('');
@@ -1168,20 +1185,23 @@ export const AIWorkbench: React.FC = () => {
                 </button>
               </div>
 
-              {/* Dynamic Model Router Badge (Shot 4 Hover Target) */}
+              {/* Dynamic Model Router Badge (Shot 4 Hover / Click Target) */}
               <div 
-                className="group relative hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs cursor-help"
-                title="Model Router dynamically assigns specialized local neural weights per step"
+                className="relative hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs cursor-pointer select-none"
+                onMouseEnter={() => setIsRouterCardOpen(true)}
+                onMouseLeave={() => setIsRouterCardOpen(false)}
+                onClick={() => setIsRouterCardOpen(!isRouterCardOpen)}
+                title="Hover or click to inspect active local neural weights & hardware telemetry (Shot 4)"
               >
                 <span className="text-[9px] font-bold uppercase text-slate-400">ROUTER:</span>
-                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border flex items-center gap-1 transition-all ${
+                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1.5 transition-all ${
                   agentProgressStep <= 2
                     ? 'bg-purple-50 text-purple-800 border-purple-200'
                     : agentProgressStep <= 5
                     ? 'bg-blue-50 text-blue-800 border-blue-200'
                     : 'bg-indigo-50 text-indigo-800 border-indigo-200'
                 }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isAgentRunning ? 'bg-emerald-500 animate-ping' : 'bg-emerald-500'}`}></span>
+                  <span className={`w-2 h-2 rounded-full ${isAgentRunning ? 'bg-emerald-500 animate-ping' : 'bg-emerald-500'}`}></span>
                   {agentProgressStep <= 2 
                     ? '👁️ Vision (Qwen2.5-VL-72B)' 
                     : agentProgressStep <= 5 
@@ -1189,19 +1209,64 @@ export const AIWorkbench: React.FC = () => {
                     : '✍️ Drafting (Qwen-2.5-72B)'}
                 </span>
 
-                {/* Model Router Hover Tooltip Card */}
-                <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block w-72 p-3 bg-slate-900 text-white rounded-xl shadow-2xl text-[10px] font-mono z-30 border border-slate-700 pointer-events-none">
-                  <div className="font-bold text-emerald-400 flex items-center justify-between pb-1.5 border-b border-slate-800">
-                    <span>⚡ ACTIVE AIR-GAPPED WEIGHTS</span>
-                    <span className="bg-emerald-950 text-emerald-400 px-1 rounded border border-emerald-800">0 EGRESS</span>
+                {/* Model Router Hover & Click Inspector Card */}
+                {isRouterCardOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-80 p-3.5 bg-slate-950 text-white rounded-2xl shadow-2xl text-[10px] font-mono z-50 border border-slate-700 animate-in fade-in duration-100">
+                    <div className="font-bold text-emerald-400 flex items-center justify-between pb-2 border-b border-slate-800">
+                      <span className="flex items-center gap-1.5">
+                        <Cpu className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>ACTIVE AIR-GAPPED WEIGHTS</span>
+                      </span>
+                      <span className="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-bold border border-emerald-800">
+                        0 EGRESS
+                      </span>
+                    </div>
+
+                    <div className="pt-2.5 space-y-1.5 text-slate-300 text-[10px]">
+                      <div>• <strong>Current Model:</strong> <span className="text-white font-bold">{agentProgressStep <= 2 ? 'Qwen2.5-VL-72B-Vision' : agentProgressStep <= 5 ? 'DeepSeek-R1-Distill-70B' : 'Qwen-2.5-72B-Instruct'}</span></div>
+                      <div>• <strong>Active Pipeline Role:</strong> <span className="text-blue-400">{agentProgressStep <= 2 ? 'OCR & P&ID Drawing Computer Vision' : agentProgressStep <= 5 ? 'Statutory SOP Reasoning & Math Sandbox' : 'Executive Approval Note Drafting'}</span></div>
+                      <div>• <strong>Cluster Hardware:</strong> 4x NVIDIA H100 SXM5 80GB (On-Premise)</div>
+                      <div>• <strong>VRAM Utilization:</strong> 42.4 GB / 320 GB (13.2%)</div>
+                      <div>• <strong>Inference Latency:</strong> ~340ms • <strong>Temp:</strong> 48°C</div>
+                      <div>• <strong>Perimeter Invariant:</strong> 100% Isolated (0 External Bytes)</div>
+                      <div className="pt-1 border-t border-slate-800 text-[9px] text-slate-400 break-all">
+                        • <strong>SHA-256 Checksum:</strong> <span className="text-emerald-400 font-mono">0x7F8A9B2C3D4E5F60718293A4B5C6</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="pt-2 space-y-1 text-slate-300">
-                    <div>• <strong>Current Model:</strong> {agentProgressStep <= 2 ? 'Qwen2.5-VL-72B-Vision' : agentProgressStep <= 5 ? 'DeepSeek-R1-Distill-70B' : 'Qwen-2.5-72B-Instruct'}</div>
-                    <div>• <strong>Active Hardware:</strong> 4x NVIDIA H100 SXM5 (Air-Gapped)</div>
-                    <div>• <strong>VRAM Util:</strong> 42.4 GB / 320 GB • <strong>Latency:</strong> ~340ms</div>
-                    <div>• <strong>Integrity Hash:</strong> SHA-256 Bit-Level Verified</div>
-                  </div>
-                </div>
+                )}
+              </div>
+
+              {/* Demo Pacing Mode Selector (90s Demo Recording vs 15s Fast) */}
+              <div className="hidden lg:flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-[9px] font-mono font-bold shadow-2xs">
+                <button
+                  onClick={() => {
+                    setDemoDurationMode('90s');
+                    showToast('Pacing Set: 90s', 'Shot 4 execution set to 90 seconds for live video recording.', 'info');
+                  }}
+                  className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                    demoDurationMode === '90s'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                  title="90-second execution pacing for video demo recording"
+                >
+                  ⏱️ 90s Demo
+                </button>
+                <button
+                  onClick={() => {
+                    setDemoDurationMode('15s');
+                    showToast('Pacing Set: 15s', 'Fast pipeline execution active.', 'info');
+                  }}
+                  className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                    demoDurationMode === '15s'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                  title="15-second fast mode"
+                >
+                  ⚡ 15s Fast
+                </button>
               </div>
 
               {/* Agent Pause / Stop Controls */}
@@ -1238,13 +1303,35 @@ export const AIWorkbench: React.FC = () => {
                       ? 'bg-blue-100 text-blue-700 border border-blue-300'
                       : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
                   }`}
-                  title="Run autonomous industrial agent pipeline"
+                  title="Run autonomous industrial agent pipeline (Shot 4)"
                 >
                   {isAgentRunning ? <RefreshCw className="w-3 h-3 animate-spin text-blue-600" /> : <Play className="w-3 h-3 fill-white" />}
-                  <span>{isAgentRunning ? `Step ${agentProgressStep}/7...` : 'Run Agent'}</span>
+                  <span>{isAgentRunning ? `Step ${agentProgressStep}/7 (${agentElapsedTime}s)...` : 'Run Agent'}</span>
                 </button>
               </div>
             </div>
+
+            {/* Live 90s Agent Execution HUD (Shot 4 Recording Display) */}
+            {isAgentRunning && (
+              <div className="p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-[10px] font-mono text-slate-200 space-y-1.5 shadow-md animate-in fade-in duration-150">
+                <div className="flex items-center justify-between text-emerald-400 font-bold border-b border-slate-800 pb-1">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>PIPELINE RUNNING: STEP {agentProgressStep}/7</span>
+                  </span>
+                  <span>⏱️ ELAPSED: {agentElapsedTime}s {demoDurationMode === '90s' ? '/ ~88s' : '/ 15s'}</span>
+                </div>
+                <div className="text-slate-300 text-[10px]">
+                  {agentProgressStep === 1 && '📄 PaddleOCR: Ingesting sample_inspection_report.pdf... Extracted 847 words, confidence 98.4%, Table Grid C4 detected.'}
+                  {agentProgressStep === 2 && '👁️ Qwen2.5-VL-72B Vision: Scanning P&ID Unit 03 PFD... Located Heat Exchanger HX-204 shell nozzle N2 tag, coordinates (X:1420, Y:890).'}
+                  {agentProgressStep === 3 && '🔍 BAAI BGE-M3 Dense RAG: Querying local Qdrant vector index for SOP-4.2.1 §7.1 and OISD-STD-129... 5 candidate chunks retrieved.'}
+                  {agentProgressStep === 4 && '🧮 Python SymPy Sandbox: Calculating corrosion rate = (12.5 - 8.2) / 15 = 0.28 mm/yr. Remaining life = (8.2 - 7.8) / 0.28 = 1.43 years.'}
+                  {agentProgressStep === 5 && '🧠 DeepSeek-R1-Distill-70B: Auditing 18-month field proposal against SOP-4.2.1 §7.1 sour crude limit (12 months)... ⚠️ DEVIATION DETECTED (+6M VARIANCE).'}
+                  {agentProgressStep === 6 && '✍️ Qwen-2.5-72B-Instruct: Synthesizing Formal Technical Approval Note (Ref: MECH/2026/HX-204-APPR) with strict 3-point sentence provenance.'}
+                  {agentProgressStep === 7 && '🔐 Hardware HSM Root of Trust: Generating SHA-256 cryptographic ledger signature (0x7F8A9B2C...). Verifying zero cloud egress.'}
+                </div>
+              </div>
+            )}
 
             {/* Step List Mini Progress Bar */}
             <div className="grid grid-cols-7 gap-1">

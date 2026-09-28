@@ -274,7 +274,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Run Agent Task Execution
-  const runAgentTask = async (prompt: string, attachedFiles: string[]) => {
+  const runAgentTask = async (prompt: string, attachedFiles: string[], durationMode: '90s' | '15s' = '90s') => {
     setIsAgentRunning(true);
     setAgentProgressStep(1);
 
@@ -284,19 +284,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'info'
     );
 
-    // Step timings calibrated for 60-90s demo presentation (~19s total)
-    // Step 1: OCR & Table Parsing (2.6s)
-    // Step 2: P&ID Computer Vision (2.8s)
-    // Step 3: Dense SOP RAG Retrieval (2.6s)
-    // Step 4: API 510 Math Verification (2.8s)
-    // Step 5: SOP Deviation Audit (3.2s)
-    // Step 6: Approval Note Synthesis (3.2s)
-    // Step 7: SHA-256 Ledger Attestation (2.0s)
-    const stepDelays = [2600, 2800, 2600, 2800, 3200, 3200, 2000];
+    // Exact Step timings calibrated for 90s demo presentation (Total: 88s)
+    // Step 1: OCR & Table Parsing (12s)
+    // Step 2: P&ID Computer Vision (13s)
+    // Step 3: Dense SOP RAG Retrieval (12s)
+    // Step 4: API 510 Math Verification (12s)
+    // Step 5: SOP Deviation Audit (15s)
+    // Step 6: Approval Note Synthesis (14s)
+    // Step 7: SHA-256 Ledger Attestation (10s)
+    const stepDelays90s = [12000, 13000, 12000, 12000, 15000, 14000, 10000];
+    const stepDelays15s = [2000, 2200, 2000, 2000, 2600, 2400, 1800];
+    const activeDelays = durationMode === '15s' ? stepDelays15s : stepDelays90s;
 
     for (let step = 1; step <= 7; step++) {
       setAgentProgressStep(step);
-      await new Promise(res => setTimeout(res, stepDelays[step - 1]));
+      await new Promise(res => setTimeout(res, activeDelays[step - 1]));
     }
 
     setIsAgentRunning(false);
