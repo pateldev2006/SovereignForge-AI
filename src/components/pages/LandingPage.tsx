@@ -236,25 +236,23 @@ export const LandingPage: React.FC = () => {
           <div className="flex justify-center mb-6">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#E7E9F0] border border-[#535F80]/30 text-xs text-[#051747] shadow-2xs">
               <span className="w-2 h-2 rounded-full bg-[#081F62] animate-ping"></span>
-              <span className="font-mono text-[11px] font-bold text-[#081F62]">100% ON-PREMISE AI</span>
+              <span className="font-mono text-[11px] font-bold text-[#081F62]">100% AIR-GAPPED ON-PREMISE AI</span>
               <span className="text-[#535F80]">|</span>
-              <span className="text-[#535F80] font-semibold">Deterministic Provenance for Refineries & Heavy Engineering</span>
+              <span className="text-[#535F80] font-semibold">Zero External Calls • Multi-Model Auto-Selection</span>
             </div>
           </div>
 
           {/* Main Hero Header */}
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#051747] tracking-tight leading-[1.15]">
-              Deterministic Agentic AI for <br className="hidden sm:inline" />
+              On-Premise Industrial AI Workbench for <br className="hidden sm:inline" />
               <span className="text-[#081F62]">
-                Heavy Engineering Complexes
+                Autonomous Engineering Workflows
               </span>
             </h1>
 
             <p className="mt-6 text-base sm:text-lg text-[#535F80] leading-relaxed max-w-3xl mx-auto font-normal">
-              Autonomous multi-model reasoning with <strong>zero external cloud calls</strong>. Ingest scanned NDT surveys, 
-              inspect high-resolution P&ID schematics, verify API 510 thickness decay, and synthesize formal statutory 
-              SOP approval notes with sentence-level cryptographic provenance.
+              Autonomous multi-step agent pipeline purpose-built for heavy engineering complexes. Ingests scanned NDT inspection reports, audits against plant SOPs, executes isolated Python code for API 510 math verification, grounds high-res P&ID drawings, and performs dynamic model auto-selection with <strong>100% zero external network egress</strong>.
             </p>
 
             {/* CTA Buttons */}
@@ -264,7 +262,7 @@ export const LandingPage: React.FC = () => {
                 className="px-7 py-3.5 rounded-xl bg-[#081F62] hover:bg-[#051747] text-[#FEFEFE] font-extrabold text-sm shadow-xl shadow-[#081F62]/20 transition-all hover:scale-105 flex items-center gap-2 cursor-pointer"
               >
                 <Bot className="w-4 h-4" />
-                <span>Launch Industrial AI Workbench</span>
+                <span>Launch AI Workbench</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -273,7 +271,7 @@ export const LandingPage: React.FC = () => {
                 className="px-6 py-3.5 rounded-xl bg-[#E7E9F0] hover:bg-[#E7E9F0]/80 text-[#051747] font-bold text-sm border border-[#535F80]/30 transition-all flex items-center gap-2 cursor-pointer"
               >
                 <ShieldCheck className="w-4 h-4 text-[#081F62]" />
-                <span>Verify Air-Gap Invariant</span>
+                <span>Proof of Zero External Calls</span>
               </button>
 
               <button
@@ -281,31 +279,36 @@ export const LandingPage: React.FC = () => {
                 className="px-6 py-3.5 rounded-xl bg-[#FEFEFE] hover:bg-[#E7E9F0] text-[#051747] font-bold text-sm border border-[#535F80]/30 transition-all flex items-center gap-2 cursor-pointer shadow-2xs"
               >
                 <Terminal className="w-4 h-4 text-[#081F62]" />
-                <span>Open Code Sandbox</span>
+                <span>Open Python Sandbox</span>
               </button>
             </div>
 
-            {/* Industrial Compliance Badges */}
-            <div className="mt-12 pt-8 border-t border-[#E7E9F0] flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-[11px] font-mono text-[#535F80]">
-              <div className="flex items-center gap-2">
+            {/* 5 Problem Statement Core Deliverable Badges */}
+            <div className="mt-12 pt-8 border-t border-[#E7E9F0] grid grid-cols-2 md:grid-cols-5 gap-4 text-[11px] font-mono text-[#535F80] text-center">
+              <div className="p-2.5 rounded-xl bg-[#E7E9F0]/60 border border-[#535F80]/20 flex flex-col items-center justify-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>OISD-STD-129 Compliant</span>
+                <span className="font-bold text-[#051747]">1. Agentic Task</span>
+                <span className="text-[10px] text-[#535F80]">Scan ➔ SOP ➔ Word</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="p-2.5 rounded-xl bg-[#E7E9F0]/60 border border-[#535F80]/20 flex flex-col items-center justify-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>ASME Sec VIII Div 1 & 2</span>
+                <span className="font-bold text-[#051747]">2. Model Auto-Select</span>
+                <span className="text-[10px] text-[#535F80]">Dynamic Multi-Model</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="p-2.5 rounded-xl bg-[#E7E9F0]/60 border border-[#535F80]/20 flex flex-col items-center justify-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>API 510 Pressure Vessel Math</span>
+                <span className="font-bold text-[#051747]">3. Code Sandbox</span>
+                <span className="text-[10px] text-[#535F80]">API 510 Math Verified</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="p-2.5 rounded-xl bg-[#E7E9F0]/60 border border-[#535F80]/20 flex flex-col items-center justify-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>FIPS 140-3 Hardware HSM</span>
+                <span className="font-bold text-[#051747]">4. Multimodal Vision</span>
+                <span className="text-[10px] text-[#535F80]">P&ID Drawing OCR</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="p-2.5 rounded-xl bg-[#E7E9F0]/60 border border-[#535F80]/20 col-span-2 md:col-span-1 flex flex-col items-center justify-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>0 Outbound Internet Calls</span>
+                <span className="font-bold text-[#051747]">5. Zero Calls Proof</span>
+                <span className="text-[10px] text-[#535F80]">SHA-256 HSM Attested</span>
               </div>
             </div>
 
