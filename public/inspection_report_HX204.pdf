@@ -1,0 +1,162 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2327 >>
+stream
+BT
+/F1 16 Tf
+50 750 Td
+(NON-DESTRUCTIVE TESTING (NDT) INSPECTION REPORT) Tj
+ET
+BT
+/F1 10 Tf
+50 730 Td
+(SovereignForge Industrial Compliance Asset Management) Tj
+ET
+BT
+/F1 9 Tf
+50 700 Td
+(========================================================================================) Tj
+ET
+BT
+/F1 9 Tf
+50 685 Td
+(DOCUMENT ID: INSP/2026/HX-204-Q3 | DATE: 15-JUN-2026 | CLASSIFICATION: CONFIDENTIAL) Tj
+ET
+BT
+/F1 9 Tf
+50 670 Td
+(EQUIPMENT TARGET: CDU-03 COMPLEX - HEAT EXCHANGER HX-204 \(SHELL & TUBE\)) Tj
+ET
+BT
+/F1 9 Tf
+50 655 Td
+(INSPECTION METHOD: ULTRASONIC NDT THICKNESS SURVEY \(ASME SECTION V\)) Tj
+ET
+BT
+/F1 9 Tf
+50 640 Td
+(========================================================================================) Tj
+ET
+BT
+/F1 9 Tf
+50 625 Td
+() Tj
+ET
+BT
+/F1 9 Tf
+50 610 Td
+(1. EXECUTIVE MEASUREMENT SUMMARY:) Tj
+ET
+BT
+/F1 9 Tf
+50 595 Td
+(- Equipment Nominal Design Thickness: 12.5 mm \(ASME Section VIII Div 1\)) Tj
+ET
+BT
+/F1 9 Tf
+50 580 Td
+(- Statutory Minimum Retirement Thickness: 7.8 mm \(SOP-4.2.1 Section 6.1\)) Tj
+ET
+BT
+/F1 9 Tf
+50 565 Td
+(- Minimum Measured Wall Thickness: 8.2 mm \(Location: Nozzle N2 vicinity, Grid C4\)) Tj
+ET
+BT
+/F1 9 Tf
+50 550 Td
+(- Calculated Historical Corrosion Rate: 0.28 mm/year) Tj
+ET
+BT
+/F1 9 Tf
+50 535 Td
+(- Calculated Remaining Service Life: 1.43 Years \(approx. 17 months\)) Tj
+ET
+BT
+/F1 9 Tf
+50 520 Td
+() Tj
+ET
+BT
+/F1 9 Tf
+50 505 Td
+(2. ULTRASONIC THICKNESS GRID MEASUREMENTS:) Tj
+ET
+BT
+/F1 9 Tf
+50 490 Td
+(Grid A1: 10.4 mm | Grid A2: 10.1 mm | Grid A3: 9.8 mm) Tj
+ET
+BT
+/F1 9 Tf
+50 475 Td
+(Grid B1: 9.5 mm  | Grid B2: 9.2 mm  | Grid B3: 8.9 mm) Tj
+ET
+BT
+/F1 9 Tf
+50 460 Td
+(Grid C1: 8.8 mm  | Grid C2: 8.5 mm  | Grid C4 \(Nozzle N2\): 8.2 mm [CRITICAL THINNING]) Tj
+ET
+BT
+/F1 9 Tf
+50 445 Td
+() Tj
+ET
+BT
+/F1 9 Tf
+50 430 Td
+(3. FIELD NDT RECOMMENDATION \(NON-CONFORMANCE DETECTED\):) Tj
+ET
+BT
+/F1 9 Tf
+50 415 Td
+(- Field inspector suggests deferring turnaround to 18 months \(March 2028\).) Tj
+ET
+BT
+/F1 9 Tf
+50 400 Td
+(- WARNING: SOP-4.2.1 Section 7.1 strictly limits turnaround deferral to 12 months for sour crude service.) Tj
+ET
+BT
+/F1 9 Tf
+50 385 Td
+(- Mandatory Action: Advance turnaround window to Q1 2027 to prevent containment breach.) Tj
+ET
+BT
+/F1 9 Tf
+50 370 Td
+() Tj
+ET
+BT
+/F1 9 Tf
+50 355 Td
+(REPORT SIGN-OFF: NDT Level-III Inspector Rajesh Kumar | Certified ISO-9712) Tj
+ET
+
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000002620 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2690
+%%EOF

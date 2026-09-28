@@ -470,6 +470,28 @@ export const AIWorkbench: React.FC = () => {
             </button>
           </div>
 
+          {/* 5. Demo Asset Helper (Download Sample PDF for Shot 2) */}
+          <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-xl space-y-2 text-xs">
+            <div className="flex items-center justify-between text-[10px] font-bold text-blue-900">
+              <span className="flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-blue-600" />
+                <span>Demo Asset (Shot 2)</span>
+              </span>
+              <span className="text-[9px] font-mono text-blue-700 bg-white px-1.5 py-0.2 rounded border border-blue-100">PDF Ready</span>
+            </div>
+            <p className="text-[10px] text-slate-600 leading-tight">
+              Download the official sample NDT report to your computer to upload in Shot 2.
+            </p>
+            <a
+              href="/sample_inspection_report.pdf"
+              download="sample_inspection_report.pdf"
+              className="w-full py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer no-underline"
+            >
+              <Download className="w-3 h-3" />
+              <span>Download Sample Report (.pdf)</span>
+            </a>
+          </div>
+
         </div>
 
         {/* ────────────────────────────────────────────────────────────────

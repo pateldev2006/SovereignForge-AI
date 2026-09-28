@@ -1,0 +1,127 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1712 >>
+stream
+BT
+/F1 16 Tf
+50 750 Td
+(ENTERPRISE STANDARD OPERATING PROCEDURE SOP-4.2.1) Tj
+ET
+BT
+/F1 10 Tf
+50 730 Td
+(Refinery Technical Services Directorate) Tj
+ET
+BT
+/F1 9 Tf
+50 700 Td
+(========================================================================================) Tj
+ET
+BT
+/F1 9 Tf
+50 685 Td
+(DOCUMENT CODE: SOP-4.2.1 \(REV 4\) | EFFECTIVE DATE: 01-APR-2025) Tj
+ET
+BT
+/F1 9 Tf
+50 670 Td
+(STANDARD OPERATING PROCEDURE: SHELL & TUBE HEAT EXCHANGER INTEGRITY) Tj
+ET
+BT
+/F1 9 Tf
+50 655 Td
+(========================================================================================) Tj
+ET
+BT
+/F1 9 Tf
+50 640 Td
+() Tj
+ET
+BT
+/F1 9 Tf
+50 625 Td
+(SECTION 4.2.1 - MANDATORY INSPECTION FREQUENCY:) Tj
+ET
+BT
+/F1 9 Tf
+50 610 Td
+(For all Class-1 and Class-2 heat exchangers operating in corrosive sour crude service) Tj
+ET
+BT
+/F1 9 Tf
+50 595 Td
+(\(>1.5 wt% total sulfur\), physical non-destructive inspection and ultrasonic tube bundle) Tj
+ET
+BT
+/F1 9 Tf
+50 580 Td
+(evaluation shall be conducted at a strictly mandated interval not exceeding 12 months.) Tj
+ET
+BT
+/F1 9 Tf
+50 565 Td
+(Extension beyond 12 months requires formal executive approval.) Tj
+ET
+BT
+/F1 9 Tf
+50 550 Td
+() Tj
+ET
+BT
+/F1 9 Tf
+50 535 Td
+(SECTION 6.1 - RETIREMENT THICKNESS CRITERIA:) Tj
+ET
+BT
+/F1 9 Tf
+50 520 Td
+(Retirement thickness for carbon steel shell operating under sour crude service is 7.8 mm.) Tj
+ET
+BT
+/F1 9 Tf
+50 505 Td
+(Equipment with remaining wall thickness below 8.5 mm must enter Enhanced Monitoring Zone.) Tj
+ET
+BT
+/F1 9 Tf
+50 490 Td
+() Tj
+ET
+BT
+/F1 9 Tf
+50 475 Td
+(SECTION 7.1 - TURNAROUND ADVANCE PLANNING:) Tj
+ET
+BT
+/F1 9 Tf
+50 460 Td
+(Turnaround must be scheduled immediately when remaining equipment life falls below 18 months.) Tj
+ET
+
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000002005 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2075
+%%EOF
